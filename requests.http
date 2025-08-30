@@ -1,0 +1,38 @@
+### (1) Get all exercises
+GET http://localhost:3000/api/exercises
+
+###
+
+### (2) Add a new exercise
+POST http://localhost:3000/api/exercises
+Content-Type: application/json
+
+{
+  "subject": "חינוך גופני",
+  "category": "חימום",
+  "name": "קפיצות במקום",
+  "description": "תרגיל חימום קלאסי לכל הגוף.",
+  "is_public": true
+}
+
+###
+
+### (3) Register a new user
+POST http://localhost:3000/api/users/register
+Content-Type: application/json
+
+{
+  "email": "teacher1@example.com",
+  "password": "password123"
+}
+
+###
+
+### (4) Login an existing user
+POST http://localhost:3000/api/users/login
+Content-Type: application/json
+
+{
+  "email": "teacher1@example.com",
+  "password": "password123"
+}

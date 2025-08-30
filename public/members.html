@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>אזור לקוחות — בחירת תרגילים</title>
+  <style>
+    :root{--bg:#f4f7fb;--ink:#0b1324;--muted:#64748b;--line:#e2e8f0;--brand:#1f2937;--accent:#10b981;--card:#fff}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,Heebo,Arial;color:var(--ink)}
+    header{position:sticky;top:0;background:#ffffffe6;backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:12px 16px;display:flex;gap:10px;align-items:center}
+    .wrap{max-width:1100px;margin:16px auto;padding:0 14px}
+    select,button{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#fff}
+    button.primary{background:linear-gradient(90deg,var(--brand),#111827);border:0;color:#fff;font-weight:900}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:12px}
+    .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px;box-shadow:0 12px 30px rgba(0,0,0,.04);transition:.2s transform,.2s box-shadow}
+    .card:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(0,0,0,.08)}
+    img{width:100%;height:180px;object-fit:cover;border-radius:12px;border:1px solid var(--line)}
+    .muted{color:var(--muted);font-size:13px}
+    .planbar{position:sticky;bottom:10px;left:0;right:0;display:flex;gap:10px;align-items:center;max-width:1100px;margin:16px auto;padding:10px 14px;border:1px solid var(--line);border-radius:14px;background:#fff;box-shadow:0 20px 60px rgba(0,0,0,.08)}
+    .planlist{display:flex;gap:8px;overflow:auto;scrollbar-width:thin}
+    .chip{background:#f1f5f9;border:1px dashed var(--line);padding:6px 10px;border-radius:999px;white-space:nowrap}
+    dialog{border:0;border-radius:16px;max-width:700px;width:92%;background:#fff;color:var(--ink);box-shadow:0 30px 80px rgba(0,0,0,.16)}
+    .parts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+    .parts button{border:1px solid var(--line);background:#f8fafc}
+    .parts button:hover{background:#eef2ff}
+  </style>
+</head>
+<body>
+  <header>
+    <strong>אזור לקוחות</strong>
+    <div style="margin-inline-start:auto"></div>
+    <button id="btn-admin" style="display:none" class="primary">מסך ניהול</button>
+    <button id="btn-builder" class="primary">בניית מערך שיעור</button>
+    <button id="logout" style="background:#b91c1c;border:0;color:#fff">התנתקות</button>
+  </header>
+
+  <div class="wrap">
+    <div style="display:flex;gap:8px;align-items:center">
+      <label>סינון לפי מקצוע:</label>
+      <select id="filter"></select>
+      <button id="refresh">רענן</button>
+      <div class="muted" id="hello" style="margin-inline-start:auto"></div>
+    </div>
+    <div id="grid" class="grid"></div>
+  </div>
+
+  <div class="planbar">
+    <strong>המערך שלי:</strong>
+    <div id="planlist" class="planlist"></div>
+    <div style="margin-inline-start:auto"></div>
+    <button id="clear-plan">איפוס</button>
+    <button id="go-builder" class="primary">בנה מערך ➜</button>
+  </div>
+
+  <dialog id="preview">
+    <div style="padding:12px">
+      <h3 id="pv-title" style="margin:0 0 6px"></h3>
+      <div class="muted" id="pv-meta"></div>
+      <img id="pv-img" alt="" style="width:100%;height:260px;object-fit:cover;border-radius:12px;border:1px solid var(--line);margin:10px 0" />
+      <p id="pv-desc" class="muted"></p>
+      <div class="muted" style="margin-top:6px">בחר לאיזה חלק במערך להוסיף:</div>
+      <div class="parts">
+        <button data-part="חימום">➕ לחימום</button>
+        <button data-part="עיקרי">➕ לעיקרי</button>
+        <button data-part="סיום">➕ לסיום</button>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
+        <button id="pv-close">סגור</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    const API=location.origin,$=(id)=>document.getElementById(id);
+    async function jsonFetch(url,opts={}){ const r=await fetch(url,{credentials:'include',headers:{'Content-Type':'application/json'},...opts}); const d=await r.json().catch(()=>({})); if(!r.ok) throw new Error(d.error||'שגיאה'); return d; }
+
+    let bank=[], plan={warmup:[], main:[], finish:[]}, previewId=null;
+    function saveDraft(){ localStorage.setItem('draftPlanV2', JSON.stringify(plan)); }
+    function loadDraft(){ try{ plan = JSON.parse(localStorage.getItem('draftPlanV2')||'{}'); if(!plan||!plan.warmup) plan={warmup:[],main:[],finish:[]}; }catch{ plan={warmup:[],main:[],finish:[]}; } }
+
+    (async ()=>{ try{ const me=await jsonFetch(`${API}/api/auth/me`); if(!me?.user) return location.href='/auth'; $('hello').textContent=`שלום, ${me.user.fullname||me.user.email}`; if(me.user.role==='admin'){ $('btn-admin').style.display='inline-block'; $('btn-admin').onclick=()=>location.href='/admin'; } }catch{ return location.href='/auth'; }
+      const subs=await jsonFetch(`${API}/api/subjects`); $('filter').innerHTML='<option value="">(הכול)</option>'+subs.map(s=>`<option>${s.name}</option>`).join(''); loadDraft(); renderPlanChips(); await loadBank(); })();
+
+    async function loadBank(){ const s=$('filter').value; const url=s?`${API}/api/exercises?subject=${encodeURIComponent(s)}`:`${API}/api/exercises`; const rows=await jsonFetch(url); bank=rows.filter(r=>r.is_public); renderGrid(); }
+
+    function renderGrid(){ const g=$('grid'); g.innerHTML=''; bank.forEach(r=>{ const d=document.createElement('div'); d.className='card'; d.innerHTML=`${r.image_url?`<img src='${r.image_url}'>`:''}<h4 style='margin:8px 0 4px'>${r.name}</h4><div class='muted'>${r.subject} • ${r.category}</div><div style='display:flex;gap:8px;margin-top:8px'><button data-id='${r.id}' data-act='preview'>תצוגה מקדימה</button><button data-id='${r.id}' data-act='add' class='primary'>הוסף למערך…</button></div>`; g.appendChild(d); }); }
+
+    $('grid').onclick=(e)=>{ const b=e.target.closest('button'); if(!b) return; const id=+b.dataset.id; const act=b.dataset.act; const ex=bank.find(x=>x.id===id); if(!ex) return; if(act==='preview'){ openPreview(ex,false); } if(act==='add'){ openPreview(ex,true); } };
+
+    function renderPlanChips(){ const box=$('planlist'); box.innerHTML=''; const chips=[...plan.warmup.map(x=>`חימום: ${x.name}`),...plan.main.map(x=>`עיקרי: ${x.name}`),...plan.finish.map(x=>`סיום: ${x.name}`)]; chips.forEach((t)=>{ const c=document.createElement('div'); c.className='chip'; c.textContent=t; box.appendChild(c); }); }
+
+    function openPreview(r,openForAdd){ $('pv-title').textContent=r.name; $('pv-meta').textContent=`${r.subject} • ${r.category}`; $('pv-desc').innerHTML=(r.description||'').replace(/\n/g,'<br>'); $('pv-img').src=r.image_url||''; previewId=r.id; $('preview').showModal(); }
+    $('pv-close').onclick=()=>$('preview').close();
+
+    document.querySelector('.parts').onclick=(e)=>{ const btn=e.target.closest('button'); if(!btn) return; const part=btn.dataset.part; const ex=bank.find(x=>x.id===previewId); if(!ex) return; if(part==='חימום') plan.warmup.push(ex); if(part==='עיקרי') plan.main.push(ex); if(part==='סיום') plan.finish.push(ex); saveDraft(); renderPlanChips(); $('preview').close(); };
+
+    $('refresh').onclick=loadBank; $('filter').onchange=loadBank;
+    $('logout').onclick=async()=>{ await jsonFetch(`${API}/api/users/logout`,{method:'POST'}); location.href='/auth'; };
+
+    $('clear-plan').onclick=()=>{ plan={warmup:[],main:[],finish:[]}; saveDraft(); renderPlanChips(); };
+    $('go-builder').onclick=()=>{ saveDraft(); location.href='/lesson-builder'; };
+    $('btn-builder').onclick=()=>{ saveDraft(); location.href='/lesson-builder'; };
+  </script>
+</body>
+</html>

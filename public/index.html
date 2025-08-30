@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>PE.P — בונים שיעור שנראה מקצועי ומוכן לכיתה</title>
+  <meta name="description" content="PE.P — מערכת למורים לבניית מערכי שיעור חכמים: חימום/עיקרי/סיום, בנק תרגילים עם תמונות, ייצוא PDF ממותג עם שם המורה. מתאים לבתי ספר, צוותים ומורים בודדים."/>
+  <style>
+    :root{--slate:#0e1726;--slate2:#162033;--ink:#eef3ff;--muted:#a7b3c9;--line:#263349;--c1:#69c7ff;--c2:#8fa3ff;--c3:#5be2b2;--cta:#111827;--gold:#f59e0b}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Heebo,Segoe UI,Arial;background:linear-gradient(180deg,var(--slate),var(--slate2));color:var(--ink)}
+    a{text-decoration:none;color:inherit}
+    .wrap{max-width:1100px;margin:0 auto;padding:0 16px}
+
+    /* ===== Header ===== */
+    header{position:sticky;top:0;background:#0f172acc;backdrop-filter:blur(8px);border-bottom:1px solid var(--line);z-index:10}
+    .head{display:flex;align-items:center;gap:12px;justify-content:space-between;padding:12px 0}
+    .brand{display:flex;align-items:center;gap:10px}
+    .logo{width:42px;height:42px}
+    .btn{padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:transparent;color:#eef3ff;font-weight:900}
+    .btn.primary{background:var(--cta);border-color:var(--cta)}
+    nav a{margin:0 10px;color:#cdd6e7;font-weight:800}
+
+    /* ===== Hero ===== */
+    .hero{display:grid;grid-template-columns:1.02fr .98fr;gap:26px;align-items:center;min-height:78vh}
+    h1{font-size:56px;line-height:1.08;margin:0}
+    h1 .grad{background:linear-gradient(90deg,var(--c1),var(--c2),var(--c3));-webkit-background-clip:text;background-clip:text;color:transparent}
+    .lead{font-size:18px;color:var(--muted);max-width:58ch}
+    .bullets{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+    .bullet{display:flex;gap:8px;align-items:flex-start}
+    .tick{width:20px;height:20px;border-radius:50%;background:linear-gradient(180deg,#10b981,#34d399);display:grid;place-items:center;font-size:14px}
+
+    /* Hero demo */
+    .demo{position:relative;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:linear-gradient(180deg,#101a2c,#0f192a)}
+    .demo::before,.demo::after{content:"";position:absolute;inset:-200% -50% auto -50%;height:400%;background:repeating-linear-gradient(90deg,rgba(105,199,255,.07) 0 1px,transparent 1px 60px);transform:rotate(12deg);animation:slide 22s linear infinite}
+    .demo::after{animation-duration:34s;opacity:.45}
+    @keyframes slide{from{transform:rotate(12deg) translateX(0)}to{transform:rotate(12deg) translateX(-60px)}}
+    .demo-inner{position:relative;z-index:1;display:grid;grid-template-rows:auto 1fr}
+    .demotop{display:flex;gap:8px;align-items:center;padding:12px;border-bottom:1px solid var(--line)}
+    .chip{background:#0f172a;border:1px solid #0b1220;border-radius:10px;padding:6px 10px}
+    .demoarea{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:12px}
+    .democard{border:1px solid var(--line);border-radius:12px;padding:10px;background:linear-gradient(180deg,#0f1a2d,#0d182a)}
+    .democard h4{margin:0 0 4px}
+    .democard p{margin:0;color:#a5b1c7;font-size:13px}
+
+    /* Sections */
+    section{margin:36px 0}
+    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .card{background:linear-gradient(180deg,#101a2c,#0f192a);border:1px solid var(--line);border-radius:16px;padding:16px}
+
+    /* Social proof */
+    .quotes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    blockquote{margin:0;background:linear-gradient(180deg,#101a2c,#0f192a);border:1px solid var(--line);border-radius:16px;padding:14px}
+    .who{display:flex;align-items:center;gap:8px;margin-top:8px;color:#cbd5e1}
+    .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(180deg,#334155,#0f172a);border:1px solid var(--line)}
+
+    /* Pricing */
+    .price{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .plan{background:linear-gradient(180deg,#101a2c,#0f192a);border:1px solid var(--line);border-radius:16px;padding:16px;position:relative;overflow:hidden}
+    .plan .big{font-size:36px;font-weight:900}
+    .ribbon{position:absolute;inset:auto 12px 12px auto;background:#1f2937;border:1px solid #0b1220;border-radius:999px;padding:6px 10px;color:#fff;font-weight:800}
+
+    /* FAQ */
+    details{background:linear-gradient(180deg,#101a2c,#0f192a);border:1px solid var(--line);border-radius:12px;padding:12px}
+
+    footer{margin:40px 0;color:#9aa7bf;text-align:center}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap head">
+      <div class="brand">
+        <!-- PE.P logo (SVG) -->
+        <svg class="logo" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-label="PE.P logo">
+          <defs>
+            <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#69c7ff"/>
+              <stop offset="50%" stop-color="#8fa3ff"/>
+              <stop offset="100%" stop-color="#5be2b2"/>
+            </linearGradient>
+          </defs>
+          <rect rx="24" ry="24" width="120" height="120" fill="url(#g)"/>
+          <text x="20" y="72" font-size="48" font-weight="900" fill="#0b1220">PE</text>
+          <circle cx="96" cy="64" r="8" fill="#0b1220"/>
+        </svg>
+        <strong>PE.P</strong>
+      </div>
+      <nav>
+        <a href="#features">יתרונות</a>
+        <a href="#social">המלצות</a>
+        <a href="#pricing">מחיר</a>
+        <a href="#faq">שאלות</a>
+      </nav>
+      <div>
+        <a href="/auth" class="btn">כניסה</a>
+        <a href="/auth" class="btn primary">התחל עכשיו</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <div>
+        <h1>בונים שיעור שנראה <span class="grad">מקצועי</span> ומוכן לכיתה</h1>
+        <p class="lead">PE.P חוסך לכם זמן ומרים את הרמה: מערך מסודר, בנק תרגילים עם תמונות, ו‑PDF ממותג עם שם המורה — מתאים למורים בודדים, צוותים ובתי ספר.</p>
+        <div class="bullets">
+          <div class="bullet"><div class="tick">✓</div><div>חלוקה ברורה: חימום • עיקרי • סיום</div></div>
+          <div class="bullet"><div class="tick">✓</div><div>תמונות וטיפים לכל תרגיל</div></div>
+          <div class="bullet"><div class="tick">✓</div><div>ייצוא PDF שנראה כמו חוברת</div></div>
+          <div class="bullet"><div class="tick">✓</div><div>שם המורה על המסמך — מוכן לשיתוף</div></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:8px">
+          <a href="/auth" class="btn primary">התחל לבנות מערך</a>
+          <a href="#features" class="btn">ראה איך זה עובד</a>
+        </div>
+        <div style="margin-top:10px;color:#cbd5e1;font-weight:700">נסו חודש ראשון — אם לא עוזר לכם, לא שילמתם.</div>
+      </div>
+      <div class="demo">
+        <div class="demo-inner">
+          <div class="demotop">
+            <span class="chip">מסמך מערך</span>
+            <span class="chip">חימום</span>
+            <span class="chip">עיקרי</span>
+            <span class="chip">סיום</span>
+          </div>
+          <div class="demoarea">
+            <div class="democard"><h4>כותרת המערך</h4><p>נושא • משך • ציוד</p></div>
+            <div class="democard"><h4>חימום</h4><p>3–4 תרגילים קצרים</p></div>
+            <div class="democard"><h4>עיקרי</h4><p>תרגול ממוקד לפי הנושא</p></div>
+            <div class="democard"><h4>סיום</h4><p>משחק קצר / מתיחה</p></div>
+            <div class="democard"><h4>PDF ממותג</h4><p>עם שם המורה</p></div>
+            <div class="democard"><h4>הערות המורה</h4><p>דגשים והתאמות</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features">
+      <h2>למה מורים בוחרים ב‑PE.P</h2>
+      <div class="grid3">
+        <div class="card"><strong>מקצועי — בלי מאמץ</strong><p style="color:#a5b1c7">מסמך שנראה מצוין בשיתוף הורים/הנהלה, כולל שם המורה וסיכום ציוד אוטומטי.</p></div>
+        <div class="card"><strong>חוסך זמן</strong><p style="color:#a5b1c7">בוחרים תרגילים מוכנים, גוררים, מייצאים. פחות הקלדה – יותר הוראה.</p></div>
+        <div class="card"><strong>מותאם לבית ספר</strong><p style="color:#a5b1c7">משתמשי אדמין, ניהול תרגילים ומקצועות, תמחור לצוותים ובתי ספר.</p></div>
+      </div>
+    </section>
+
+    <section id="social">
+      <h2>מה אומרים מורים</h2>
+      <div class="quotes">
+        <blockquote>“בשליש הזמן אני מוכן לשיעור — וה‑PDF נראה כמו חוברת רשמית.”<div class="who"><div class="avatar"></div><div>רותם, מורה לחינוך גופני</div></div></blockquote>
+        <blockquote>“כשהשם שלי על המסמך, זה גם יפה וגם שומר על קרדיט. אהבתי את הסיכום ציוד.”<div class="who"><div class="avatar"></div><div>אורי, מחנך כיתות ו׳</div></div></blockquote>
+        <blockquote>“סוף־סוף כלי שמדבר מורים. פשוט, ברור, נראה פרימיום.”<div class="who"><div class="avatar"></div><div>מאיה, רכזת מקצוע</div></div></blockquote>
+      </div>
+    </section>
+
+    <section id="pricing">
+      <h2>תמחור הוגן ופשוט</h2>
+      <div class="price">
+        <div class="plan"><div class="ribbon">התחלה קלה</div><h3>בודד</h3><div class="big">₪19<span style="font-size:14px">/חודש</span></div><p style="color:#a5b1c7">הכול למורה אחד</p><a href="/auth" class="btn primary">התחל</a></div>
+        <div class="plan"><div class="ribbon" style="background:#0b6;">חסכוני</div><h3>צוות</h3><div class="big">₪49</div><p style="color:#a5b1c7">עד 5 מורים</p><a href="/auth" class="btn primary">בחר</a></div>
+        <div class="plan"><div class="ribbon" style="background:#7c3aed;">בית ספרי</div><h3>בית ספר</h3><div class="big">₪199</div><p style="color:#a5b1c7">ללא הגבלה + מנהל</p><a href="/auth" class="btn primary">דברו איתנו</a></div>
+      </div>
+      <p style="margin-top:8px;color:#cbd5e1">כולל תמיכה בעברית מלאה, ובלי התחייבות. חודש ראשון עלינו.</p>
+    </section>
+
+    <section id="faq">
+      <h2>שאלות נפוצות</h2>
+      <div class="grid3">
+        <details open><summary><strong>איך מוסיפים תרגילים?</strong></summary><p style="color:#a5b1c7">בוחרים מקצוע, צופים בתרגיל ולוחצים “הוסף” לחימום/עיקרי/סיום. הכל נשמר כטיוטה עד הייצוא.</p></details>
+        <details><summary><strong>איך עובד ה‑PDF הממותג?</strong></summary><p style="color:#a5b1c7">שם המורה נלקח אוטומטית מהחשבון ומופיע כסימן מים עדין במסמך.</p></details>
+        <details><summary><strong>אפשר לעבוד כצוות?</strong></summary><p style="color:#a5b1c7">כן. מנהל יכול להוסיף מורים, לנהל תרגילים ומקצועות, ולתמחר בתוכנית צוות/בית ספר.</p></details>
+      </div>
+    </section>
+  </main>
+
+  <footer>© PE.P — נבנה יחד עם אנשי חינוך • <a href="/auth">התחברות</a></footer>
+</body>
+</html>

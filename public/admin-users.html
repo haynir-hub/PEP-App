@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ניהול — משתמשים</title>
+  <style>
+    :root{--bg:#f7f9fc;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--brand:#2563eb;--danger:#ef4444;--card:#fff}
+    *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Heebo,Arial;background:var(--bg);color:var(--ink)}
+    .layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+    .side{background:#fff;border-inline-end:1px solid var(--line);padding:16px;position:sticky;top:0;height:100vh}
+    .side h3{margin:0 0 10px}
+    .nav a{display:flex;align-items:center;gap:8px;padding:10px;border-radius:10px;color:var(--ink);text-decoration:none;border:1px solid transparent}
+    .nav a:hover{background:#f1f5f9}
+    .nav a.active{border-color:var(--line);background:#f8fafc}
+    header{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line);background:#fff;position:sticky;top:0;z-index:5}
+    .wrap{max-width:1100px;margin:12px auto;padding:0 16px}
+    .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 20px 60px rgba(0,0,0,.04)}
+    input,select,button{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#fff}
+    button.primary{background:linear-gradient(90deg,var(--brand),#4f46e5);border:0;color:#fff;font-weight:800}
+    table{width:100%;border-collapse:collapse}
+    th,td{border-bottom:1px solid var(--line);padding:8px;text-align:right}
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="side">
+      <h3>PE Planner</h3>
+      <div class="nav">
+        <a href="/admin">🏋 ניהול תרגילים</a>
+        <a class="active" href="/admin-users">👥 ניהול משתמשים</a>
+        <a href="/members">👀 תצוגת לקוח</a>
+        <a href="/lesson-builder">📝 בניית מערך</a>
+      </div>
+    </aside>
+
+    <main>
+      <header>
+        <strong>ניהול משתמשים</strong>
+        <div style="margin-inline-start:auto"></div>
+        <button id="logout" style="background:#b91c1c;color:#fff;border:0">התנתקות</button>
+      </header>
+
+      <div class="wrap">
+        <div class="card">
+          <h2 style="margin:0 0 8px">הוספת משתמש</h2>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+            <input id="email" placeholder="אימייל" />
+            <input id="fullname" placeholder="שם מלא" />
+            <input id="password" placeholder="סיסמה ראשונית" />
+            <select id="role"><option value="member">Member</option><option value="admin">Admin</option></select>
+          </div>
+          <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+            <button id="add" class="primary">הוסף</button>
+            <span id="msg" class="muted"></span>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <h2 style="margin:0 0 8px">כל המשתמשים</h2>
+          <table id="tbl"><thead><tr><th>אימייל</th><th>שם מלא</th><th>תפקיד</th><th>נוצר</th><th>כניסה אחרונה</th><th>פעולות</th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const API=location.origin,$=(id)=>document.getElementById(id);
+    async function jsonFetch(url,opts={}){ const r=await fetch(url,{credentials:'include',headers:{'Content-Type':'application/json'},...opts}); const d=await r.json().catch(()=>({})); if(!r.ok) throw new Error(d.error||'שגיאה'); return d; }
+    (async ()=>{ try{ const me=await jsonFetch(`${API}/api/auth/me`); if(me?.user?.role!=='admin') return location.href='/auth'; }catch{ return location.href='/auth'; } load(); })();
+
+    async function load(){ const rows=await jsonFetch(`${API}/api/admin/users`); const tb=$('tbl').querySelector('tbody'); tb.innerHTML=''; const fmt=(s)=> s? new Date(s).toLocaleString('he-IL'):''; rows.forEach(u=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${u.email}</td><td>${u.fullname||''}</td><td>${u.role}</td><td class='muted'>${fmt(u.created_at)}</td><td class='muted'>${fmt(u.last_login_at)}</td><td><button data-id='${u.id}' style='background:#ef4444;color:#fff;border:0;border-radius:10px;padding:8px 10px'>מחק</button></td>`; tb.appendChild(tr); }); }
+
+    $('add').onclick=async()=>{ const email=$('email').value.trim(), fullname=$('fullname').value.trim(), password=$('password').value, role=$('role').value; if(!email||!fullname||!password) return $('msg').textContent='חסר שדה'; try{ await jsonFetch(`${API}/api/admin/users`,{method:'POST',body:JSON.stringify({email,fullname,password,role})}); $('msg').textContent='נוסף'; $('email').value=''; $('fullname').value=''; $('password').value=''; await load(); }catch(e){ $('msg').textContent=e.message; } };
+
+    $('tbl').onclick=async(e)=>{ const b=e.target.closest('button'); if(!b) return; const id=+b.dataset.id; if(!confirm('בטוח למחוק?')) return; try{ await jsonFetch(`${API}/api/admin/users/${id}`,{method:'DELETE'}); await load(); }catch(err){ alert(err.message); } };
+
+    $('logout').onclick=async()=>{ await jsonFetch(`${API}/api/users/logout`,{method:'POST'}); location.href='/auth'; };
+  </script>
+</body>
+</html>

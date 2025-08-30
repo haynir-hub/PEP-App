@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>NIKA — LET’S PLAY</title>
+  <meta name="description" content="NIKA LET’S PLAY — בניית מערך משחקים למאמנים: חימום/עיקרי/סיום, בנק משחקים, ייצוא PDF ממותג של ניקה."/>
+  <style>
+    :root{--slate:#0e1726;--slate2:#162033;--ink:#eef3ff;--muted:#a7b3c9;--line:#263349;--cta:#111827}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Heebo,Segoe UI,Arial;background:linear-gradient(180deg,var(--slate),var(--slate2));color:var(--ink)}
+    a{text-decoration:none;color:inherit}
+    .wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+    header{position:sticky;top:0;background:#0f172acc;backdrop-filter:blur(8px);border-bottom:1px solid var(--line);z-index:10}
+    .head{display:flex;align-items:center;gap:12px;justify-content:space-between;padding:12px 0}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{height:54px}
+    .btn{padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:transparent;color:#eef3ff;font-weight:900}
+    .btn.primary{background:var(--cta);border-color:var(--cta)}
+    .hero{display:grid;grid-template-columns:1.1fr .9fr;gap:20px;align-items:center;min-height:76vh}
+    h1{font-size:52px;line-height:1.08;margin:0}
+    .lead{font-size:18px;color:var(--muted)}
+    .panel{border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,#101a2c,#0f192a);padding:14px}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    .card{border:1px solid var(--line);border-radius:14px;padding:12px;background:linear-gradient(180deg,#0f1a2d,#0d182a)}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap head">
+      <div class="brand">
+        <img src="/assets/nika-logo.png" alt="NIKA Let's Play" class="logo"/>
+        <strong>LET’S PLAY</strong>
+      </div>
+      <div>
+        <a href="/auth" class="btn">כניסה</a>
+        <a href="/nika/builder" class="btn primary">למסך בניית משחקים</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <div>
+        <h1>מערך משחקים צבעוני, מוכן להפעלה</h1>
+        <p class="lead">מאמנים ב‑NIKA מרכיבים בקליק מערך משחקים לפי חימום/עיקרי/סיום ומקבלים PDF ממותג של העמותה — עם שמם, ציוד מסוכם ועיצוב שמח.</p>
+        <div style="display:flex;gap:10px;margin-top:10px">
+          <a href="/nika/builder" class="btn primary">התחל לבנות</a>
+          <a href="/auth" class="btn">התחברות</a>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="grid">
+          <div class="card"><strong>חימום</strong><div>משחקי פתיחה קצרים</div></div>
+          <div class="card"><strong>עיקרי</strong><div>משחקי שיתוף/תחרות</div></div>
+          <div class="card"><strong>סיום</strong><div>משחק להרגעה/חיוך</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>איך זה עובד?</h2>
+      <div class="grid">
+        <div class="card"><strong>1 — בוחרים משחקים</strong><div>מסננים לפי גיל/מטרה, צופים ומוסיפים.</div></div>
+        <div class="card"><strong>2 — מסדרים למסמך</strong><div>חימום → עיקרי → סיום.</div></div>
+        <div class="card"><strong>3 — מייצאים</strong><div>PDF ממותג NIKA עם שם המאמן.</div></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap" style="margin:30px 0;color:#9aa7bf;text-align:center">© NIKA — LET’S PLAY</footer>
+</body>
+</html>

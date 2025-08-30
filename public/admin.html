@@ -1,0 +1,41 @@
+<!-- public/auth.html -->
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>התחברות</title>
+</head>
+<body>
+  <h2>התחבר למערכת</h2>
+  
+  <form id="login-form">
+    <input type="email" id="email" placeholder="אימייל" required><br>
+    <input type="password" id="password" placeholder="סיסמה" required><br>
+    <button type="submit">התחבר</button>
+  </form>
+
+  <script>
+    document.getElementById('login-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      
+      const response = await fetch('/api/users/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+      if (data.message === 'התחברות בוצעה בהצלחה') {
+        alert('התחברת בהצלחה!');
+        // הפנה לדף אחר אם הצליח
+      } else {
+        alert('שגיאה בהתחברות');
+      }
+    });
+  </script>
+</body>
+</html>
