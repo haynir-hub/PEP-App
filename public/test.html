@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Session Test Page</title>
+</head>
+<body>
+    <h1>Test Page</h1>
+    <button id="test-btn">Check Authentication</button>
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById('test-btn').addEventListener('click', async () => {
+            const resultEl = document.getElementById('result');
+            resultEl.textContent = 'Checking...';
+            try {
+                const response = await fetch('/api/auth/me', {
+                    credentials: 'include' // Ensure cookies are sent
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || 'Request failed');
+                }
+                resultEl.textContent = JSON.stringify(data.user, null, 2);
+            } catch (error) {
+                console.error('Test failed:', error);
+                resultEl.textContent = `Error: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>

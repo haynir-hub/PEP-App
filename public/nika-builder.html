@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+ <meta charset="utf-8" />
+ <meta name="viewport" content="width=device-width, initial-scale=1" />
+ <title>בניית מערך משחקים — NIKA</title>
+ <style>
+    :root{--bg:#f4f7fb;--ink:#0b1324;--muted:#64748b;--line:#e2e8f0;--brand:#d946ef;--card:#fff}
+    body{margin:0;background:var(--bg);font-family:system-ui,sans-serif;color:var(--ink)}
+    header{position:sticky;top:0;background:#ffffffe6;backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:12px 16px;display:flex;gap:10px;align-items:center}
+    .wrap{max-width:960px;margin:16px auto;padding:0 14px}
+    button,input,textarea{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#fff}
+    button.primary{background:var(--brand);border:0;color:#fff;font-weight:900}
+    .paper{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px}
+    .title{font-size:26px;font-weight:900;margin:0 0 6px; width: 100%;}
+    .bankgrid{display:grid;grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));gap:8px}
+    .bankitem{border:1px solid var(--line);border-radius:12px;padding:8px}
+    .plan-item{border:1px solid var(--line);border-radius:12px;padding:10px;margin:8px 0;display:flex;gap:10px;align-items:center}
+    .plan-item img{width:72px;height:72px;object-fit:cover;border-radius:10px}
+ </style>
+</head>
+<body>
+<header>
+  <strong>בניית מערך משחקים (NIKA)</strong>
+  <div style="margin-inline-start:auto"></div>
+  <a id="return-to-admin" href="/api/auth/return-to-admin" style="display:none; background-color: #ffc107; color: black; padding: 8px 12px; border-radius: 8px; font-weight: bold; text-decoration: none;">חזרה לניהול</a>
+  <div id="coachBox" class="muted">מאמן: —</div>
+</header>
+<div class="wrap">
+  <div class="paper">
+    <input id="plan-name" class="title" placeholder="כותרת למערך (למשל: אימון פתיחת עונה)"/>
+    <h3>מאגר המשחקים</h3>
+    <div id="bank" class="bankgrid"></div>
+    <h3 style="margin-top:2rem;">המערך שלך</h3>
+    <div id="plan"></div>
+    <button id="save-plan" class="primary" style="width:100%; margin-top:1rem;">שמור מערך</button>
+  </div>
+</div>
+
+<script>
+    const $ = (id) => document.getElementById(id);
+    let allGames = [], lessonPlan = [], currentUser = null;
+
+    async function jsonFetch(url, options = {}) {
+        const r = await fetch(url, { credentials: 'include', headers: { 'Content-Type': 'application/json' }, ...options });
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(d.error || 'Request failed');
+        return d;
+    }
+
+    async function initializePage() {
+        try {
+            const meData = await jsonFetch('/api/auth/me');
+            currentUser = meData.user;
+            if (!currentUser) return location.href = '/auth';
+            
+            $('coachBox').textContent = `מאמן: ${currentUser.fullname || currentUser.email}`;
+            if (currentUser.role === 'admin' && meData.viewAsOrg) {
+                $('return-to-admin').style.display = 'inline-block';
+            }
+
+            const builderData = await jsonFetch('/api/builder-data/nika');
+            allGames = builderData.games;
+            renderBank();
+        } catch (error) {
+            console.error("Init Error:", error);
+        }
+    }
+
+    function renderBank() {
+        const bankEl = $('bank');
+        bankEl.innerHTML = '';
+        allGames.forEach(game => {
+            const item = document.createElement('div');
+            item.className = 'bankitem';
+            item.innerHTML = `<strong>${game.name}</strong><div style='margin-top:8px'><button class='add-btn' data-id='${game.id}'>➕ הוסף למערך</button></div>`;
+            bankEl.appendChild(item);
+        });
+    }
+    
+    function renderPlan() {
+        const planEl = $('plan');
+        planEl.innerHTML = '';
+        lessonPlan.forEach((game, i) => {
+            const el = document.createElement('div');
+            el.className = 'plan-item';
+            el.innerHTML = `${game.image_url ? `<img src='${game.image_url}'>` : `<div style='width:72px;height:72px;border:1px dashed #ccc;'></div>`}
+                <div><strong>${i + 1}. ${game.name}</strong></div>
+                <button class='del-btn' data-index='${i}' style='margin-inline-start:auto;background:#ef4444;color:#fff'>מחק</button>`;
+            planEl.appendChild(el);
+        });
+    }
+
+    $('bank').addEventListener('click', (e) => {
+        if (e.target.classList.contains('add-btn')) {
+            const gameId = parseInt(e.target.dataset.id);
+            const game = allGames.find(g => g.id === gameId);
+            if (game && !lessonPlan.find(p => p.id === gameId)) {
+                lessonPlan.push(game);
+                renderPlan();
+            }
+        }
+    });
+    
+    $('plan').addEventListener('click', (e) => {
+        if(e.target.classList.contains('del-btn')) {
+            const index = parseInt(e.target.dataset.index);
+            lessonPlan.splice(index, 1);
+            renderPlan();
+        }
+    });
+
+    $('save-plan').addEventListener('click', async () => {
+        const payload = {
+            name: $('plan-name').value.trim(),
+            organization: 'NIKA',
+            plan_data: { games: lessonPlan.map(g => g.id) }
+        };
+        if (!payload.name) return alert('אנא הזן כותרת למערך.');
+        try {
+            await jsonFetch('/api/lesson-plans', { method: 'POST', body: JSON.stringify(payload) });
+            alert('המערך נשמר בהצלחה!');
+            lessonPlan = [];
+            renderPlan();
+            $('plan-name').value = '';
+        } catch (error) {
+            alert(`שגיאה בשמירת המערך: ${error.message}`);
+        }
+    });
+
+    initializePage();
+</script>
+</body>
+</html>

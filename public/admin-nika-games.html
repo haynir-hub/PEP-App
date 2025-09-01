@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>ניהול משחקים - NIKA</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background-color: #f4f7f9; color: #333; margin: 20px; }
+        .container { max-width: 1000px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1, h2 { color: #d946ef; }
+        a { color: #007bff; text-decoration: none; }
+        nav { margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee; display: flex; gap: 20px; align-items: center; }
+        nav a { font-weight: bold; font-size: 18px; }
+        form { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; border-bottom: 1px solid #ccc; padding-bottom: 20px; }
+        input, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .form-span-all { grid-column: 1 / -1; }
+        .image-upload-area { border: 2px dashed #ccc; padding: 10px; border-radius: 4px; text-align: center; }
+        button { grid-column: 1 / -1; padding: 12px; background-color: #d946ef; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: right; }
+        td img { max-width: 100px; max-height: 100px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav>
+            <a href="/admin">תרגילי PEP</a>
+            <a href="/admin-subjects">נושאים</a>
+            <div style="margin-inline-start: auto; display: flex; gap: 15px;">
+                <a href="/api/auth/view-as-pep" style="color: #007bff;">צפה כ-PEP</a>
+                <a href="/api/auth/view-as-nika" style="color: #d946ef;">צפה כ-NIKA</a>
+            </div>
+        </nav>
+        <h1>ניהול משחקים - NIKA</h1>
+        <form id="game-form">
+            <h2>הוסף משחק חדש</h2>
+            <input type="text" id="name" name="name" placeholder="שם המשחק" required>
+            <input type="number" id="duration_minutes" name="duration_minutes" placeholder="משך זמן בדקות">
+            <textarea id="description" name="description" placeholder="תיאור המשחק" rows="3" class="form-span-all"></textarea>
+            <textarea id="equipment" name="equipment" placeholder="ציוד נדרש" rows="3" class="form-span-all"></textarea>
+            <div class="image-upload-area form-span-all">
+                <label for="image">העלה תמונה מהמחשב</label>
+                <input type="file" id="image" name="image">
+                <hr>
+                <label for="image_url">או הדבק קישור לתמונה</label>
+                <input type="text" id="image_url" name="image_url" placeholder="https://example.com/image.jpg">
+            </div>
+            <button type="submit">הוסף משחק</button>
+        </form>
+        <h2>רשימת משחקים קיימים</h2>
+        <table>
+            <thead>
+                <tr><th>תמונה</th><th>שם</th><th>תיאור</th><th>משך</th></tr>
+            </thead>
+            <tbody id="games-table-body"></tbody>
+        </table>
+    </div>
+    <script>
+        const form = document.getElementById('game-form');
+        const tableBody = document.getElementById('games-table-body');
+        async function renderGames() { const response = await fetch('/api/nika-games', { credentials: 'include' }); const { games } = await response.json(); tableBody.innerHTML = ''; games.forEach(game => { const row = document.createElement('tr'); row.innerHTML = `<td>${game.image_url ? `<img src="${game.image_url}" alt="${game.name}">` : ''}</td><td>${game.name}</td><td>${game.description || ''}</td><td>${game.duration_minutes || ''}</td>`; tableBody.appendChild(row); }); }
+        form.addEventListener('submit', async (e) => { e.preventDefault(); const formData = new FormData(form); try { const response = await fetch('/api/nika-games', { method: 'POST', credentials: 'include', body: formData }); if (!response.ok) throw new Error('Failed to add game'); form.reset(); renderGames(); } catch (error) { alert(`שגיאה בהוספת המשחק: ${error.message}`); } });
+        renderGames();
+    </script>
+</body>
+</html>

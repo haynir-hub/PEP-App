@@ -1,41 +1,87 @@
-<!-- public/auth.html -->
 <!DOCTYPE html>
-<html lang="he">
+<html lang="he" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>התחברות</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ניהול תרגילים - PEP</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background-color: #f4f7f9; color: #333; margin: 20px; }
+        .container { max-width: 1200px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1, h2 { color: #0056b3; }
+        a { color: #007bff; text-decoration: none; }
+        nav { margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee; display: flex; gap: 20px; align-items: center; }
+        nav a { font-weight: bold; font-size: 18px; }
+        form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; border-bottom: 1px solid #ccc; padding-bottom: 20px; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .form-span-all { grid-column: 1 / -1; }
+        .image-upload-area { border: 2px dashed #ccc; padding: 10px; border-radius: 4px; text-align: center; }
+        button { padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: right; }
+        td img { max-width: 100px; max-height: 100px; border-radius: 4px; }
+        .actions-cell { width: 120px; text-align: center; }
+        .actions-cell button { margin: 2px; font-size: 12px; padding: 5px 10px; }
+        .edit-btn { background-color: #ffc107; }
+        .delete-btn { background-color: #dc3545; }
+    </style>
 </head>
 <body>
-  <h2>התחבר למערכת</h2>
-  
-  <form id="login-form">
-    <input type="email" id="email" placeholder="אימייל" required><br>
-    <input type="password" id="password" placeholder="סיסמה" required><br>
-    <button type="submit">התחבר</button>
-  </form>
-
-  <script>
-    document.getElementById('login-form').addEventListener('submit', async function (e) {
-      e.preventDefault();
-      
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      
-      const response = await fetch('/api/users/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-
-      const data = await response.json();
-      if (data.message === 'התחברות בוצעה בהצלחה') {
-        alert('התחברת בהצלחה!');
-        // הפנה לדף אחר אם הצליח
-      } else {
-        alert('שגיאה בהתחברות');
-      }
-    });
-  </script>
+    <div class="container">
+        <nav>
+            <a href="/admin-subjects">ניהול נושאים</a>
+            <a href="/admin-nika-games">ניהול משחקי NIKA</a>
+            <div style="margin-inline-start: auto; display: flex; gap: 15px;">
+                <a href="/api/auth/view-as-pep" style="color: #007bff;">צפה כ-PEP</a>
+                <a href="/api/auth/view-as-nika" style="color: #d946ef;">צפה כ-NIKA</a>
+            </div>
+        </nav>
+        <h1>ניהול תרגילים (PEP)</h1>
+        <form id="exercise-form">
+            <h2 class="form-span-all">הוסף / ערוך תרגיל</h2>
+            <input type="hidden" id="exercise-id">
+            <input type="text" id="name" name="name" placeholder="שם התרגיל" required>
+            <select id="subject" name="subject" required></select>
+            <select id="category" name="category" required>
+                <option value="">בחר קטגוריה</option>
+                <option value="חימום">חימום</option>
+                <option value="עיקרי">עיקרי</option>
+                <option value="משחק סיום">משחק סיום</option>
+            </select>
+            <input type="text" id="age_group" name="age_group" placeholder="קבוצת גיל">
+            <textarea id="description" name="description" placeholder="תיאור התרגיל" rows="3" class="form-span-all"></textarea>
+            <textarea id="equipment" name="equipment" placeholder="ציוד נדרש" rows="3" class="form-span-all"></textarea>
+            <div class="image-upload-area form-span-all">
+                <label for="image">העלה תמונה מהמחשב</label>
+                <input type="file" id="image" name="image">
+                <hr>
+                <label for="image_url">או הדבק קישור לתמונה</label>
+                <input type="text" id="image_url" name="image_url" placeholder="https://example.com/image.jpg">
+            </div>
+            <button type="submit" class="form-span-all">שמור תרגיל</button>
+            <button type="button" id="cancel-edit" class="form-span-all" style="display:none; background-color:#6c757d;">בטל עריכה</button>
+        </form>
+        <h2>רשימת תרגילים</h2>
+        <table>
+            <thead>
+                <tr><th>תמונה</th><th>שם</th><th>קטגוריה</th><th>נושא</th><th>פעולות</th></tr>
+            </thead>
+            <tbody id="exercises-table-body"></tbody>
+        </table>
+    </div>
+    <script>
+        const form = document.getElementById('exercise-form');
+        const tableBody = document.getElementById('exercises-table-body');
+        const subjectSelect = document.getElementById('subject');
+        const cancelEditBtn = document.getElementById('cancel-edit');
+        async function jsonFetch(url, options = {}) { const defaultOptions = { credentials: 'include', headers: { 'Content-Type': 'application/json' } }; const response = await fetch(url, { ...defaultOptions, ...options }); const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(data.error || 'Request failed'); return data; };
+        async function loadSubjects() { const { subjects } = await jsonFetch('/api/subjects'); subjectSelect.innerHTML = '<option value="">בחר נושא</option>'; subjects.forEach(s => subjectSelect.innerHTML += `<option value="${s.name}">${s.name}</option>`); };
+        async function renderExercises() { const { exercises } = await jsonFetch('/api/exercises'); tableBody.innerHTML = ''; exercises.forEach(ex => { const row = document.createElement('tr'); row.dataset.exercise = JSON.stringify(ex); row.innerHTML = `<td>${ex.image_url ? `<img src="${ex.image_url}" alt="${ex.name}">` : ''}</td><td>${ex.name}</td><td>${ex.category}</td><td>${ex.subject}</td><td class="actions-cell"><button class="edit-btn">ערוך</button><button class="delete-btn">מחק</button></td>`; tableBody.appendChild(row); }); };
+        function resetForm() { form.reset(); document.getElementById('exercise-id').value = ''; cancelEditBtn.style.display = 'none'; };
+        form.addEventListener('submit', async (event) => { event.preventDefault(); const formData = new FormData(form); const id = document.getElementById('exercise-id').value; const method = id ? 'PUT' : 'POST'; const url = id ? `/api/exercises/${id}` : '/api/exercises'; try { const response = await fetch(url, { method: method, credentials: 'include', body: formData }); const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(data.error || 'Request failed'); resetForm(); renderExercises(); } catch (error) { alert(`שגיאה בשמירת התרגיל: ${error.message}`); } });
+        cancelEditBtn.addEventListener('click', resetForm);
+        tableBody.addEventListener('click', async (event) => { if (event.target.classList.contains('delete-btn')) { const row = event.target.closest('tr'); const ex = JSON.parse(row.dataset.exercise); if (confirm(`האם למחוק את התרגיל "${ex.name}"?`)) { try { await jsonFetch(`/api/exercises/${ex.id}`, { method: 'DELETE' }); renderExercises(); } catch (error) { alert(`שגיאה במחיקת התרגיל: ${error.message}`); } } } if (event.target.classList.contains('edit-btn')) { const row = event.target.closest('tr'); const ex = JSON.parse(row.dataset.exercise); document.getElementById('exercise-id').value = ex.id; document.getElementById('name').value = ex.name; document.getElementById('subject').value = ex.subject; document.getElementById('category').value = ex.category; document.getElementById('description').value = ex.description || ''; document.getElementById('equipment').value = ex.equipment || ''; document.getElementById('age_group').value = ex.age_group || ''; document.getElementById('image_url').value = ex.image_url || ''; cancelEditBtn.style.display = 'block'; window.scrollTo(0, 0); } });
+        loadSubjects();
+        renderExercises();
+    </script>
 </body>
 </html>
