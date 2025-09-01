@@ -5,15 +5,15 @@
  <meta name="viewport" content="width=device-width, initial-scale=1" />
  <title>בניית מערך שיעור — PE.P</title>
  <style>
-    :root{--bg:#f4f7fb;--ink:#0b1324;--muted:#64748b;--line:#e2e8f0;--brand:#111827;--ok:#10b981;--card:#fff} *{box-sizing:border-box} body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,Heebo,Arial;color:var(--ink)} header{position:sticky;top:0;background:#ffffffe6;backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:12px 16px;display:flex;gap:10px;align-items:center} .wrap{max-width:960px;margin:16px auto;padding:0 14px} button,select,input,textarea{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#fff} button.primary{background:linear-gradient(90deg,var(--brand),#1f2937);border:0;color:#fff;font-weight:900} .paper{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.05);padding:18px} .title{font-size:26px;font-weight:900;margin:0 0 6px; width: 100%;} .meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0} .section{margin-top:16px} .section h3{margin:0 0 8px;border-bottom:2px solid var(--line);padding-bottom:6px} .exercise{border:1px solid var(--line);border-radius:12px;padding:10px;margin:8px 0;display:grid;grid-template-columns:72px 1fr auto;gap:10px;align-items:center} .exercise img{width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--line)} .exercise .act button{margin-inline-start:6px} textarea.notes{width:100%;min-height:100px} details.bank{margin:12px 0} .bankbox{border:1px dashed var(--line);border-radius:12px;padding:10px} .bankgrid{display:grid;grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));gap:8px} .bankitem{border:1px solid var(--line);border-radius:12px;padding:8px} .bar{position:sticky;bottom:10px;display:flex;gap:8px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;box-shadow:0 20px 60px rgba(0,0,0,.08);margin-top:12px} .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;place-items:center;z-index:100;padding:16px;} .modal-content{background:#fff;padding:20px;border-radius:16px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;}
+    :root{--bg:#f4f7fb;--ink:#0b1324;--muted:#64748b;--line:#e2e8f0;--brand:#111827;--ok:#10b981;--card:#fff} *{box-sizing:border-box} body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,Heebo,Arial;color:var(--ink)} header{position:sticky;top:0;background:#ffffffe6;backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:12px 16px;display:flex;gap:10px;align-items:center} .wrap{max-width:960px;margin:16px auto;padding:0 14px} button,select,input,textarea{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#fff; cursor: pointer;} button.primary{background:linear-gradient(90deg,var(--brand),#1f2937);border:0;color:#fff;font-weight:900} .paper{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.05);padding:18px} .title{font-size:26px;font-weight:900;margin:0 0 6px; width: 100%;} .meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0} .section{margin-top:16px} .section h3{margin:0 0 8px;border-bottom:2px solid var(--line);padding-bottom:6px} .exercise{border:1px solid var(--line);border-radius:12px;padding:10px;margin:8px 0;display:grid;grid-template-columns:72px 1fr auto;gap:10px;align-items:center} .exercise img{width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--line)} .exercise .act button{margin-inline-start:6px} textarea.notes{width:100%;min-height:100px} details.bank{margin:12px 0} .bankbox{border:1px dashed var(--line);border-radius:12px;padding:10px} .bankgrid{display:grid;grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));gap:8px} .bankitem{border:1px solid var(--line);border-radius:12px;padding:8px} .bar{position:sticky;bottom:10px;display:flex;gap:8px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;box-shadow:0 20px 60px rgba(0,0,0,.08);margin-top:12px} .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;place-items:center;z-index:100;padding:16px;} .modal-content{background:#fff;padding:20px;border-radius:16px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;}
  </style>
 </head>
 <body>
 <header>
-  <strong>בניית מערך</strong>
+  <strong>בניית מערך (PEP)</strong>
+  <a href="/my-lessons-pep"><button>המערכים שלי</button></a>
   <div style="margin-inline-start:auto"></div>
   <a id="return-to-admin" href="/api/auth/return-to-admin" style="display:none; background-color: #ffc107; color: black; padding: 8px 12px; border-radius: 8px; font-weight: bold; text-decoration: none;">חזרה לניהול</a>
-  <button id="btn-admin" style="display:none;">מסך ניהול</button>
   <div id="teacherBox" class="muted">מורה: —</div>
 </header>
 <div class="wrap">
@@ -43,7 +43,7 @@
 </div>
 <script>
     const $ = (id) => document.getElementById(id);
-    let allExercises = [], allSubjects = [], lessonPlan = { warmup: [], main: [], finish: [] }, currentUser = null;
+    let allExercises = [], allSubjects = [], lessonPlan = { warmup: [], main: [], finish: [] }, currentUser = null, currentLessonId = null;
 
     async function jsonFetch(url, options = {}) {
         const response = await fetch(url, { credentials: 'include', headers: { 'Content-Type': 'application/json' }, ...options });
@@ -57,10 +57,10 @@
             const meData = await jsonFetch('/api/auth/me');
             currentUser = meData.user;
             if (!currentUser) return location.href = '/auth';
-            
             $('teacherBox').textContent = `מורה: ${currentUser.fullname || currentUser.email}`;
-            if (currentUser.role === 'admin' && !meData.viewAsOrg) $('btn-admin').style.display = 'inline-block';
-            if (currentUser.role === 'admin' && meData.viewAsOrg) $('return-to-admin').style.display = 'inline-block';
+            if (currentUser.role === 'admin' && meData.viewAsOrg) {
+                $('return-to-admin').style.display = 'inline-block';
+            }
 
             const builderData = await jsonFetch('/api/builder-data/pep');
             allExercises = builderData.exercises;
@@ -68,7 +68,25 @@
             
             populateSubjectFilter();
             renderBank();
-        } catch (error) {
+
+            const urlParams = new URLSearchParams(window.location.search);
+            currentLessonId = urlParams.get('id');
+            if (currentLessonId) {
+                const { lesson_plan } = await jsonFetch(`/api/lesson-plans/${currentLessonId}`);
+                const planData = JSON.parse(lesson_plan.plan_data);
+                
+                $('plan-name').value = lesson_plan.name;
+                $('topic').value = lesson_plan.topic;
+                $('notes').value = lesson_plan.notes;
+                document.title = `עריכת מערך: ${lesson_plan.name}`;
+
+                lessonPlan.warmup = (planData.warmup || []).map(id => lesson_plan.items.find(ex => ex.id === id)).filter(Boolean);
+                lessonPlan.main = (planData.main || []).map(id => lesson_plan.items.find(ex => ex.id === id)).filter(Boolean);
+                lessonPlan.finish = (planData.finish || []).map(id => lesson_plan.items.find(ex => ex.id === id)).filter(Boolean);
+                
+                renderPlan();
+            }
+        } catch (error) { 
             console.error("Initialization Error:", error);
             alert("אירעה שגיאה בטעינת הדף. נסה לרענן.");
         }
@@ -82,7 +100,8 @@
         const filteredExercises = selectedSubject ? allExercises.filter(ex => ex.subject === selectedSubject) : allExercises;
         bankEl.innerHTML = '';
         filteredExercises.forEach(ex => {
-            const item = document.createElement('div'); item.className = 'bankitem';
+            const item = document.createElement('div');
+            item.className = 'bankitem';
             item.innerHTML = `<strong>${ex.name}</strong><div class='muted'>${ex.category}</div>
                 <div style='display:flex;flex-wrap:wrap;gap:6px;margin-top:6px'>
                     <button class='add-btn' data-id='${ex.id}' data-part='warmup'>➕ חימום</button>
@@ -96,9 +115,11 @@
     
     function renderPlan() {
         ['warmup', 'main', 'finish'].forEach(key => {
-            const box = $(key); box.innerHTML = '';
-            lessonPlan[key].forEach((ex, i) => {
-                const el = document.createElement('div'); el.className = 'exercise';
+            const box = $(key);
+            box.innerHTML = '';
+            (lessonPlan[key] || []).forEach((ex, i) => {
+                const el = document.createElement('div');
+                el.className = 'exercise';
                 el.innerHTML = `${ex.image_url ? `<img src='${ex.image_url}'>` : `<div style='width:72px;height:72px;border:1px dashed var(--line);'></div>`}
                     <div><strong>${i + 1}. ${ex.name}</strong><div class='muted'>${ex.category}</div></div>
                     <div class='act'><button class='del-btn' data-part='${key}' data-index='${i}' style='background:#ef4444;color:#fff'>מחק</button></div>`;
@@ -144,12 +165,7 @@
 
     function showDetailsModal(ex) {
         const modalBox = $('modal-box');
-        modalBox.innerHTML = `<h2>${ex.name}</h2>
-            <p><strong>נושא:</strong> ${ex.subject}</p><p><strong>קטגוריה:</strong> ${ex.category}</p>
-            <p><strong>ציוד:</strong> ${ex.equipment || 'ללא'}</p><hr>
-            <p>${(ex.description || '').replace(/\n/g, '<br>')}</p>
-            ${ex.image_url ? `<img src="${ex.image_url}" style="width:100%;">` : ''}
-            <button onclick="closeDetailsModal()" style="width:100%; margin-top: 15px;">סגור</button>`;
+        modalBox.innerHTML = `<h2>${ex.name}</h2><p><strong>נושא:</strong> ${ex.subject}</p><p><strong>קטגוריה:</strong> ${ex.category}</p><p><strong>ציוד:</strong> ${ex.equipment || 'ללא'}</p><hr><p>${(ex.description || '').replace(/\n/g, '<br>')}</p>${ex.image_url ? `<img src="${ex.image_url}" style="width:100%;">` : ''}<button onclick="closeDetailsModal()" style="width:100%; margin-top: 15px;">סגור</button>`;
         $('details-modal').style.display = 'grid';
     }
     function closeDetailsModal() { $('details-modal').style.display = 'none'; }
@@ -161,24 +177,29 @@
             main: lessonPlan.main.map(ex => ex.id),
             finish: lessonPlan.finish.map(ex => ex.id),
         };
-        const payload = {
-            name: $('plan-name').value, topic: $('topic').value,
-            subject: $('subject-filter').value, notes: $('notes').value,
-            plan_data
-        };
+        const payload = { name: $('plan-name').value, topic: $('topic').value, subject: $('subject-filter').value, notes: $('notes').value, plan_data };
         if (!payload.name) return alert('אנא הזן כותרת למערך השיעור.');
+        
+        const method = currentLessonId ? 'PUT' : 'POST';
+        const url = currentLessonId ? `/api/lesson-plans/${currentLessonId}` : '/api/lesson-plans';
+        
         try {
-            await jsonFetch('/api/lesson-plans', { method: 'POST', body: JSON.stringify(payload) });
-            alert(`המערך "${payload.name}" נשמר בהצלחה!`);
-            lessonPlan = { warmup: [], main: [], finish: [] };
-            renderPlan();
-            $('plan-name').value = ''; $('topic').value = ''; $('notes').value = '';
-        } catch (error) { alert(`שגיאה בשמירת המערך: ${error.message}`); }
+            await jsonFetch(url, { method: method, body: JSON.stringify(payload) });
+            alert('המערך נשמר בהצלחה!');
+            if (!currentLessonId) {
+                lessonPlan = { warmup: [], main: [], finish: [] };
+                renderPlan();
+                $('plan-name').value = ''; $('topic').value = ''; $('notes').value = '';
+            } else {
+                location.href = '/my-lessons-pep';
+            }
+        } catch (error) { 
+            alert(`שגיאה בשמירת המערך: ${error.message}`); 
+        }
     });
 
-    $('btn-admin').onclick = () => location.href = '/admin';
     $('subject-filter').onchange = renderBank;
-
+    
     initializePage();
 </script>
 </body>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>מערך שיעור</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Heebo', sans-serif;
+            margin: 0;
+            color: #1A202C;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        .pep-background { background: linear-gradient(135deg, #EFF6FF, #E0E7FF) !important; }
+        .nika-background { background: linear-gradient(135deg, #FDF2F8, #FCE7F3) !important; }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 15mm;
+            box-sizing: border-box;
+            position: relative;
+        }
+        .content-wrapper {
+            position: relative;
+            z-index: 1;
+        }
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-35deg);
+            font-size: 80px;
+            font-weight: 900;
+            color: #000;
+            opacity: 0.04;
+            pointer-events: none;
+            z-index: 0;
+            white-space: nowrap;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid #A0AEC0;
+            padding-bottom: 15px;
+        }
+        .header .titles h1 { font-size: 32px; font-weight: 900; margin: 0; color: #2D3748; }
+        .header .titles h2 { font-size: 16px; margin: 5px 0 0; font-weight: normal; color: #4A5568; }
+        .header .logo { width: 80px; height: 80px; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-weight: bold; color: #fff; }
+        .logo.pep { background-color: #111827; }
+        .logo.nika { background-color: #d946ef; }
+        
+        .section { margin-top: 20px; page-break-inside: avoid; }
+        .section h3 { font-size: 22px; margin: 0 0 10px; font-weight: 700; color: #2D3748; }
+        
+        .equipment-summary { background-color: rgba(255, 255, 255, 0.75); border: 1px solid #E2E8F0; border-radius: 12px; padding: 15px; font-size: 14px; }
+        
+        .item-card {
+            background-color: rgba(255, 255, 255, 0.85);
+            border: 1px solid #E2E8F0;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            page-break-inside: avoid;
+        }
+        .item-card img { width: 90px; height: 90px; object-fit: cover; border-radius: 8px; border: 1px solid #E2E8F0; }
+        .item-card .details { flex: 1; }
+        .item-card .details h4 { margin: 0 0 8px; font-size: 18px; font-weight: 700; }
+        .item-card .details p { margin: 0; font-size: 14px; color: #4A5568; line-height: 1.6; }
+    </style>
+</head>
+<body class="{{bodyClass}}">
+    <div class="page">
+        <div class="watermark">{{teacherName}}</div>
+        <div class="content-wrapper">
+            <header class="header">
+                <div class="titles">
+                    <h1>מערך שיעור</h1>
+                    <h2>{{lessonName}}</h2>
+                </div>
+                {{logoHtml}}
+            </header>
+            <main>
+                <div class="section"><h3>סיכום ציוד</h3><div class="equipment-summary">{{equipmentList}}</div></div>
+                <div class="section" id="warmup-section"><h3>חימום</h3>{{warmupItems}}</div>
+                <div class="section" id="main-section"><h3>עיקרי</h3>{{mainItems}}</div>
+                <div class="section" id="finish-section"><h3>משחק סיום</h3>{{finishItems}}</div>
+            </main>
+        </div>
+    </div>
+</body>
+</html>

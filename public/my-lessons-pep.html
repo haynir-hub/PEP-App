@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+
+<head>
+    <meta charset="utf-8" />
+    <title>המערכים שלי — PEP</title>
+    <style>
+        :root {
+            --bg: #f4f7fb;
+            --ink: #0b1324;
+            --muted: #64748b;
+            --line: #e2e8f0;
+            --brand: #111827;
+            --card: #fff
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            font-family: system-ui, sans-serif;
+            color: var(--ink)
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            background: #ffffffe6;
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--line);
+            padding: 12px 16px;
+            display: flex;
+            gap: 10px;
+            align-items: center
+        }
+
+        .wrap {
+            max-width: 960px;
+            margin: 16px auto;
+            padding: 0 14px
+        }
+
+        .plan-card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        button {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--line);
+            background: #fff;
+            cursor: pointer;
+        }
+
+        button.primary {
+            background: var(--brand);
+            color: #fff;
+            border: 0;
+        }
+
+        a {
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <strong>המערכים שלי (PEP)</strong>
+        <a href="/lesson-builder"><button>+ צור מערך חדש</button></a>
+        <div style="margin-inline-start:auto"></div>
+        <a id="return-to-admin" href="/api/auth/return-to-admin"
+            style="display:none; background-color: #ffc107; color: black; padding: 8px 12px; border-radius: 8px; font-weight: bold;">חזרה
+            לניהול</a>
+        <div id="teacherBox" class="muted" style="margin:0 10px;">מורה: —</div>
+    </header>
+    <div class="wrap">
+        <div id="lesson-list"></div>
+    </div>
+    <script>
+        const $ = (id) => document.getElementById(id);
+        
+        async function jsonFetch(url, options = {}) {
+            const r = await fetch(url, {
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                ...options
+            });
+            const d = await r.json().catch(() => ({}));
+            if (!r.ok) throw new Error(d.error || 'Request failed');
+            return d;
+        }
+
+        async function initializePage() {
+            try {
+                const meData = await jsonFetch('/api/auth/me');
+                if (!meData.user) return location.href = '/auth';
+                $('teacherBox').textContent = `מורה: ${meData.user.fullname || meData.user.email}`;
+
+                if (meData.user.role === 'admin' && meData.viewAsOrg) {
+                    $('return-to-admin').style.display = 'inline-block';
+                }
+                await renderLessonPlans();
+            } catch (error) {
+                console.error("Error loading page:", error);
+            }
+        }
+
+        async function renderLessonPlans() {
+            const listEl = $('lesson-list');
+            try {
+                const {
+                    lesson_plans
+                } = await jsonFetch('/api/my-lesson-plans');
+                const pep_plans = lesson_plans.filter(p => p.organization === 'PEP');
+                if (pep_plans.length === 0) {
+                    listEl.innerHTML = '<p>עדיין לא יצרת מערכי שיעור.</p>';
+                    return;
+                }
+                listEl.innerHTML = '';
+                pep_plans.forEach(plan => {
+                    const card = document.createElement('div');
+                    card.className = 'plan-card';
+                    const date = new Date(plan.created_at).toLocaleDateString('he-IL');
+                    card.innerHTML = `
+                        <div>
+                            <h3 style="margin:0;">${plan.name}</h3>
+                            <p style="margin:4px 0;" class="muted">${plan.topic || ''} • נוצר ב-${date}</p>
+                        </div>
+                        <div>
+                            <a href="/lesson-builder?id=${plan.id}"><button>ערוך</button></a>
+                            <a href="/api/lesson-plans/${plan.id}/pdf" style="margin:0 8px;"><button class="primary">הורד PDF</button></a>
+                            <button class="delete-btn" data-id="${plan.id}" style="color:#dc3545;">מחק</button>
+                        </div>
+                    `;
+                    listEl.appendChild(card);
+                });
+            } catch (e) {
+                listEl.innerHTML = `<p style="color:red">שגיאה בטעינת המערכים.</p>`
+            }
+        }
+
+        $('lesson-list').addEventListener('click', async (e) => {
+            if (e.target.classList.contains('delete-btn')) {
+                const planId = e.target.dataset.id;
+                if (confirm('האם אתה בטוח שברצונך למחוק את המערך?')) {
+                    try {
+                        await jsonFetch(`/api/lesson-plans/${planId}`, {
+                            method: 'DELETE'
+                        });
+                        await renderLessonPlans();
+                    } catch (error) {
+                        alert(`שגיאה במחיקת המערך: ${error.message}`);
+                    }
+                }
+            }
+        });
+
+        initializePage();
+    </script>
+</body>
+</html>
