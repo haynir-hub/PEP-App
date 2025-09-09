@@ -1,65 +1,258 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <title>ניהול משחקים - NIKA</title>
-    <style>
-        body { font-family: system-ui, sans-serif; background-color: #f4f7f9; color: #333; margin: 20px; }
-        .container { max-width: 1000px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1, h2 { color: #d946ef; }
-        a { color: #007bff; text-decoration: none; }
-        nav { margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee; display: flex; gap: 20px; align-items: center; }
-        nav a { font-weight: bold; font-size: 18px; }
-        form { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; border-bottom: 1px solid #ccc; padding-bottom: 20px; }
-        input, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .form-span-all { grid-column: 1 / -1; }
-        .image-upload-area { border: 2px dashed #ccc; padding: 10px; border-radius: 4px; text-align: center; }
-        button { grid-column: 1 / -1; padding: 12px; background-color: #d946ef; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: right; }
-        td img { max-width: 100px; max-height: 100px; border-radius: 4px; }
-    </style>
+  <meta charset="utf-8" />
+  <title>אזור ניהול – משחקי NIKA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+
+  <!-- סגנונות מקומיים קלים רק לגריד/מודל של רשימת המשחקים -->
+  <style>
+    /* גריד של כל המשחקים (בדומה לבונה מערכים) */
+    .games-grid{display:grid;grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap:14px}
+    .game-tile{
+      background:#fff;border:1px solid var(--glass-border);border-radius:16px;padding:12px;
+      display:flex;flex-direction:column;gap:10px;min-height:290px;
+      transition:box-shadow .15s; box-shadow:var(--shadow-sm);
+    }
+    .game-tile:hover{box-shadow:var(--shadow-md)}
+    .game-thumb{
+      width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px;border:1px solid var(--glass-border);
+      background:#f3f4f6
+    }
+    .game-name{font-size:15px;font-weight:900;margin:2px 0 0;line-height:1.25}
+    .game-chip{
+      background:#fde8ff;color:#86198f;border:1px solid #f5d0fe;
+      padding:4px 10px;border-radius:999px;font-size:12px;display:inline-block
+    }
+    .game-actions{display:grid;grid-template-columns: repeat(3, 1fr); gap:8px; margin-top:auto}
+    .btn-danger{ background:linear-gradient(135deg,#fda4a4,#ef6b6b); color:#fff; border:0; }
+    .btn-danger:hover{ filter:brightness(1.05); }
+
+    /* Modal – כרטיסייה צפה */
+    #modalBackdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.28);backdrop-filter:blur(2px);
+      align-items:center;justify-content:center;padding:18px;z-index:60;}
+    #modalBackdrop .modal{width:min(820px,96vw);max-height:88vh;overflow:auto;background:#fff;
+      border:1px solid var(--glass-border);border-radius:16px;padding:14px;box-shadow:0 20px 60px rgba(2,6,23,.25)}
+    #modalBackdrop .modal header{position:sticky;top:-14px;background:#fff;border-bottom:1px solid var(--glass-border);
+      border-radius:14px 14px 0 0;}
+    #modalBackdrop .modal h3{margin:0;font-size:18px}
+    #modalBackdrop .content{padding:12px}
+    #modalBackdrop .hero{width:100%;max-height:360px;object-fit:cover;border-radius:12px;border:1px solid var(--glass-border)}
+    #modalBackdrop .meta-line{color:#475569;margin:10px 0}
+    #modalBackdrop ul{margin:0;padding:0 18px;list-style:disc}
+  </style>
 </head>
-<body>
-    <div class="container">
-        <nav>
-            <a href="/admin">תרגילי PEP</a>
-            <a href="/admin-subjects">נושאים</a>
-            <div style="margin-inline-start: auto; display: flex; gap: 15px;">
-                <a href="/api/auth/view-as-pep" style="color: #007bff;">צפה כ-PEP</a>
-                <a href="/api/auth/view-as-nika" style="color: #d946ef;">צפה כ-NIKA</a>
-            </div>
-        </nav>
-        <h1>ניהול משחקים - NIKA</h1>
-        <form id="game-form">
-            <h2>הוסף משחק חדש</h2>
-            <input type="text" id="name" name="name" placeholder="שם המשחק" required>
-            <input type="number" id="duration_minutes" name="duration_minutes" placeholder="משך זמן בדקות">
-            <textarea id="description" name="description" placeholder="תיאור המשחק" rows="3" class="form-span-all"></textarea>
-            <textarea id="equipment" name="equipment" placeholder="ציוד נדרש" rows="3" class="form-span-all"></textarea>
-            <div class="image-upload-area form-span-all">
-                <label for="image">העלה תמונה מהמחשב</label>
-                <input type="file" id="image" name="image">
-                <hr>
-                <label for="image_url">או הדבק קישור לתמונה</label>
-                <input type="text" id="image_url" name="image_url" placeholder="https://example.com/image.jpg">
-            </div>
-            <button type="submit">הוסף משחק</button>
-        </form>
-        <h2>רשימת משחקים קיימים</h2>
-        <table>
-            <thead>
-                <tr><th>תמונה</th><th>שם</th><th>תיאור</th><th>משך</th></tr>
-            </thead>
-            <tbody id="games-table-body"></tbody>
-        </table>
+<body class="nika-skin">
+
+  <!-- כותרת עליונה: לוגו+כותרת מימין, כפתור חזרה משמאל -->
+  <div class="appbar">
+    <div class="appbar__inner">
+      <div class="brand">
+        <div class="brand__logo">
+          <img class="brand__img" src="/assets/nika-logo.png" alt="NIKA Logo" />
+        </div>
+        <div class="brand__title">ניהול משחקי NIKA</div>
+      </div>
+      <div><a class="btn secondary btn-sm" href="/admin">חזור לאזור ניהול</a></div>
     </div>
-    <script>
-        const form = document.getElementById('game-form');
-        const tableBody = document.getElementById('games-table-body');
-        async function renderGames() { const response = await fetch('/api/nika-games', { credentials: 'include' }); const { games } = await response.json(); tableBody.innerHTML = ''; games.forEach(game => { const row = document.createElement('tr'); row.innerHTML = `<td>${game.image_url ? `<img src="${game.image_url}" alt="${game.name}">` : ''}</td><td>${game.name}</td><td>${game.description || ''}</td><td>${game.duration_minutes || ''}</td>`; tableBody.appendChild(row); }); }
-        form.addEventListener('submit', async (e) => { e.preventDefault(); const formData = new FormData(form); try { const response = await fetch('/api/nika-games', { method: 'POST', credentials: 'include', body: formData }); if (!response.ok) throw new Error('Failed to add game'); form.reset(); renderGames(); } catch (error) { alert(`שגיאה בהוספת המשחק: ${error.message}`); } });
-        renderGames();
-    </script>
+  </div>
+
+  <main class="container" style="margin-top:20px;">
+    <div class="grid-2">
+      <!-- טופס הוספה/עריכה – ללא שינוי -->
+      <section class="section">
+        <div class="h3">הוספת/עריכת משחק</div>
+        <div class="mt-12" style="display:grid; gap:10px;">
+          <input id="name" class="input" placeholder="שם המשחק" />
+          <select id="type" class="input">
+            <option value="warmup">משחק חימום</option>
+            <option value="main" selected>משחק מרכזי</option>
+          </select>
+          <textarea id="description" class="input" placeholder="תיאור המשחק (כל שורה = נקודה)" rows="8"></textarea>
+          <div class="muted" style="font-size:12px;">תצוגה מקדימה בנקודות:</div>
+          <ul id="descPreview" class="desc-list"></ul>
+          <textarea id="equipment" class="input" placeholder="ציוד נדרש (מופרד בפסיקים)"></textarea>
+          <input id="image" type="file" class="input" accept="image/*" />
+        </div>
+        <div class="mt-16" style="display:flex; gap:8px; justify-content:flex-end;">
+          <button id="save" class="btn btn-sm">שמור</button>
+          <button id="reset" class="btn secondary btn-sm">נקה</button>
+        </div>
+      </section>
+
+      <!-- כל המשחקים – גריד -->
+      <section class="section">
+        <div class="h3">כל המשחקים</div>
+        <div class="mt-12">
+          <div id="list" class="games-grid"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Modal לפרטים -->
+  <div id="modalBackdrop" role="dialog" aria-modal="true">
+    <div class="modal">
+      <header>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;">
+          <h3 id="modalTitle"></h3>
+          <button class="btn" id="modalClose">סגור</button>
+        </div>
+      </header>
+      <div class="content">
+        <img id="modalImage" class="hero" alt="" />
+        <div class="meta-line" id="modalMeta"></div>
+        <ul id="modalBullets"></ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function updatePreview(){
+      const raw=(document.getElementById('description').value||'').replace(/\r/g,'');
+      const lines=raw.split('\n').map(s=>s.trim()).filter(Boolean);
+      const el=document.getElementById('descPreview');
+      if(!lines.length){ el.innerHTML=''; return; }
+      el.innerHTML = lines.map(s=>`<li>${s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}</li>`).join('');
+    }
+    document.addEventListener('input',e=>{ if(e.target && e.target.id==='description') updatePreview(); });
+
+    function typeToHe(t){ return t==='warmup'?'משחק חימום':'משחק מרכזי'; }
+    function badgeClass(t){ return t==='warmup'?'badge nika-warmup':'badge nika-main'; }
+  </script>
+
+  <script>
+    let editingId=null;
+
+    const els={
+      name:document.getElementById('name'),
+      type:document.getElementById('type'),
+      description:document.getElementById('description'),
+      equipment:document.getElementById('equipment'),
+      img:document.getElementById('image'),
+      list:document.getElementById('list'),
+      save:document.getElementById('save'),
+      reset:document.getElementById('reset')
+    };
+
+    // Modal elements
+    const modal = document.getElementById('modalBackdrop');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalImage = document.getElementById('modalImage');
+    const modalMeta  = document.getElementById('modalMeta');
+    const modalBullets = document.getElementById('modalBullets');
+    document.getElementById('modalClose').onclick = () => modal.style.display = 'none';
+    modal.addEventListener('click',(e)=>{ if(e.target===modal) modal.style.display='none'; });
+
+    const toBullets = txt => String(txt||'').replace(/\r/g,'').split('\n').map(s=>s.trim()).filter(Boolean);
+
+    async function load(){
+      const r=await fetch('/api/nika-games');
+      const d=await r.json();
+      renderGrid(d.games||[]);
+    }
+
+    function renderGrid(games){
+      els.list.innerHTML='';
+      games.forEach(x=>{
+        const tile = document.createElement('div');
+        tile.className = 'game-tile';
+
+        const img = document.createElement('img');
+        img.className = 'game-thumb';
+        img.src = x.image_url ? x.image_url : '/assets/nika-logo.png';
+        img.alt = '';
+
+        const name = document.createElement('div');
+        name.className = 'game-name';
+        name.textContent = x.name || '';
+
+        const chip = document.createElement('span');
+        chip.className = 'game-chip';
+        chip.textContent = typeToHe(x.type||'main');
+
+        const actions = document.createElement('div');
+        actions.className = 'game-actions';
+
+        const btnEdit = document.createElement('button');
+        btnEdit.className='btn';
+        btnEdit.textContent='ערוך';
+        btnEdit.onclick=()=>fillForm(x);
+
+        const btnDelete = document.createElement('button');
+        btnDelete.className='btn btn-danger';
+        btnDelete.textContent='מחק';
+        btnDelete.onclick=async()=>{
+          if(!confirm('למחוק?')) return;
+          const r=await fetch('/api/nika-games/'+x.id,{method:'DELETE'});
+          if(r.ok) load(); else alert('שגיאה במחיקה');
+        };
+
+        const btnDetails = document.createElement('button');
+        btnDetails.className='btn primary';
+        btnDetails.textContent='פרטים';
+        btnDetails.onclick=()=>openDetails(x);
+
+        actions.append(btnEdit, btnDelete, btnDetails);
+
+        tile.append(img, name, chip, actions);
+        els.list.appendChild(tile);
+      });
+    }
+
+    function openDetails(g){
+      modalTitle.textContent = g.name || '';
+      modalImage.style.display = (g.image_url || '').length ? 'block' : 'none';
+      modalImage.src = g.image_url || '';
+      modalMeta.textContent = `סוג: ${typeToHe(g.type||'main')} · ציוד: ${g.equipment||'-'}`;
+      modalBullets.innerHTML = '';
+      toBullets(g.description).forEach(line => {
+        const li = document.createElement('li');
+        li.textContent = line;
+        modalBullets.appendChild(li);
+      });
+      modal.style.display = 'flex';
+    }
+
+    function fillForm(x){
+      editingId=x.id;
+      els.name.value=x.name||'';
+      els.type.value=x.type||'main';
+      els.description.value=x.description||'';
+      els.equipment.value=x.equipment||'';
+      els.img.value=''; updatePreview();
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+
+    function clearForm(){
+      editingId=null;
+      els.name.value=els.description.value=els.equipment.value='';
+      els.type.value='main';
+      els.img.value='';
+      updatePreview();
+    }
+    els.reset.onclick=()=>clearForm();
+
+    els.save.onclick=async ()=>{
+      const fd=new FormData();
+      fd.append('name',els.name.value);
+      fd.append('type',els.type.value);
+      fd.append('description',els.description.value);
+      fd.append('equipment',els.equipment.value);
+      if(els.img.files[0]) fd.append('image', els.img.files[0]);
+
+      let r;
+      if(editingId){ r=await fetch('/api/nika-games/'+editingId,{method:'PUT',body:fd}); }
+      else{ r=await fetch('/api/nika-games',{method:'POST',body:fd}); }
+
+      if(r.ok){ clearForm(); load(); } else { alert('שגיאה בשמירה'); }
+    };
+
+    load(); updatePreview();
+  </script>
 </body>
 </html>

@@ -1,107 +1,286 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
- <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>בניית מערך משחקים — NIKA</title>
- <style>
-    :root{--bg:#f4f7fb;--ink:#0b1324;--muted:#64748b;--line:#e2e8f0;--brand:#d946ef;--card:#fff} body{margin:0;background:var(--bg);font-family:system-ui,sans-serif;color:var(--ink)} header{position:sticky;top:0;background:#ffffffe6;backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:12px 16px;display:flex;gap:10px;align-items:center} .wrap{max-width:960px;margin:16px auto;padding:0 14px} button,input,textarea{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#fff; cursor:pointer;} button.primary{background:var(--brand);border:0;color:#fff;font-weight:900} .paper{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px} .title{font-size:26px;font-weight:900;margin:0 0 6px; width: 100%;} .bankgrid{display:grid;grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));gap:8px} .bankitem{border:1px solid var(--line);border-radius:12px;padding:8px} .plan-item{border:1px solid var(--line);border-radius:12px;padding:10px;margin:8px 0;display:flex;gap:10px;align-items:center} .plan-item img{width:72px;height:72px;object-fit:cover;border-radius:10px} .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;place-items:center;z-index:100;padding:16px;} .modal-content{background:#fff;padding:20px;border-radius:16px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;}
- </style>
+  <meta charset="UTF-8" />
+  <title>NIKA – בונה מערכים</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#fff7fb; --card:#ffffff; --text:#0f172a; --muted:#475569; --accent:#d946ef;
+      --border:#f0def0; --chip:#fde8ff;
+      --btn:#0f172a; --btnbg:#ffffff; --btnbd:#f5d0fe;
+      --pill-bg:#ffffff; --pill-shadow:0 8px 22px rgba(2,6,23,.08);
+      --danger-bg: #fee2e2; --danger-text: #b91c1c; --admin-bg: #fef9c3; --admin-text: #713f12;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;font-family:Heebo,system-ui,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    header{ display:flex;align-items:center;justify-content:space-between;gap:16px; padding:16px 20px;background:#fff;border-bottom:1px solid var(--border); }
+    .brand{display:flex;align-items:center;gap:12px}
+    .brand img{height:138px;width:auto;object-fit:contain}
+    .brand h1{font-size:20px;margin:0;font-weight:900; line-height: 1.2;}
+    .user-welcome { font-size: 16px; color: var(--muted); font-weight: 500; }
+    #user-name-placeholder { font-weight: 700; color: var(--accent); }
+    .nav-pills{display:flex;gap:12px; align-items: center;}
+    .pill{ background:var(--pill-bg); border:1px solid var(--border); box-shadow:var(--pill-shadow); color:#0f172a; padding:10px 18px; border-radius:16px; font-size:16px; font-weight:800; cursor:pointer; text-decoration:none; transition:transform .05s ease; white-space:nowrap; }
+    .pill:active{transform:translateY(1px)}
+    .pill.logout { background-color: var(--danger-bg); color: var(--danger-text); border-color: #fecaca; }
+    .pill.admin-return { background-color: var(--admin-bg); color: var(--admin-text); border-color: #fde68a; display: none; }
+    main{max-width:1300px;margin:20px auto;padding:0 16px}
+    .builder-grid{display:grid;grid-template-columns: 1.2fr 1fr; gap:20px}
+    .panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px}
+    .panel h2{margin:0 0 12px;font-size:18px}
+    .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    .filters select,.filters input{ padding:10px 12px;border:1px solid var(--border);border-radius:12px;font-size:14px;min-width:170px;background:#fff }
+    .filters input{min-width:220px}
+    .library{max-height:72vh;overflow:auto;padding-inline:4px}
+    .grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(170px,1fr)); gap:14px }
+    .tile{ background:#fff;border:1px solid var(--border);border-radius:16px;padding:12px; display:flex;flex-direction:column;gap:8px; transition:box-shadow .15s; }
+    .tile:hover{box-shadow:0 10px 22px rgba(0,0,0,.06)}
+    .thumb{ width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px;border:1px solid var(--border);background:#f3f4f6 }
+    .name{font-size:14px;font-weight:900;margin:2px 0 0;line-height:1.25}
+    .chip{background:var(--chip);color:#86198f;border:1px solid #f5d0fe;padding:4px 10px;border-radius:999px;font-size:12px;display:inline-block}
+    .actions{display:grid;grid-template-columns: repeat(3, 1fr); gap:6px; margin-top:auto}
+    .btn{ border:1px solid var(--btnbd);background:var(--btnbg);color:var(--btn); border-radius:10px;padding:8px 4px;font-size:12px;cursor:pointer;transition:.15s;text-align:center;white-space:nowrap }
+    .btn:hover{filter:brightness(0.99)}
+    .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+    .sections{display:grid;gap:12px}
+    .section{background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px}
+    .section h3{margin:0 0 10px;font-size:16px}
+    .drop{min-height:96px;border:1px dashed #e9d5ff;border-radius:12px;padding:10px;display:grid;gap:10px}
+    .lesson-item{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;background:#fdf4ff;border:1px solid var(--border);border-radius:12px;padding:10px}
+    .lesson-item h5{margin:0;font-size:15px}
+    .lesson-item .meta{font-size:12px;color:#6b7280}
+    #modalBackdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.28);backdrop-filter:blur(2px);align-items:center;justify-content:center;padding:18px}
+    #modalBackdrop .modal{width:min(820px,96vw);background:#fff;border:1px solid var(--border);border-radius:16px;padding:14px}
+    #modalBackdrop .hero{width:100%;max-height:360px;object-fit:cover;border-radius:12px;border:1px solid var(--border)}
+    #modalBackdrop .meta-line{color:#475569;margin:10px 0}
+    #modalBackdrop ul{margin:0;padding:0 18px;list-style:disc}
+    footer { text-align: center; padding: 24px; margin-top: 32px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--border); }
+  </style>
 </head>
 <body>
 <header>
-  <strong>בניית מערך משחקים (NIKA)</strong>
-  <a href="/my-lessons-nika"><button>המערכים שלי</button></a>
-  <div style="margin-inline-start:auto"></div>
-  <a id="return-to-admin" href="/api/auth/return-to-admin" style="display:none; background-color: #ffc107; color: black; padding: 8px 12px; border-radius: 8px; font-weight: bold; text-decoration: none;">חזרה לניהול</a>
-  <div id="coachBox" class="muted">מאמן: —</div>
+  <div class="brand">
+    <img src="/assets/nika-logo.png" alt="NIKA">
+    <div>
+        <h1>בונה מערכים – NIKA</h1>
+        <div class="user-welcome">שלום, <span id="user-name-placeholder">טוען...</span></div>
+    </div>
+  </div>
+  <nav class="nav-pills">
+    <a href="/api/auth/return-to-admin" id="return-to-admin-btn" class="pill admin-return">חזרה לממשק ניהול</a>
+    <a class="pill" href="/my-lessons-nika">המערכים שלי</a>
+    <a class="pill logout" href="#" id="logout-btn">התנתק</a>
+  </nav>
 </header>
-<div class="wrap">
-  <div class="paper">
-    <input id="plan-name" class="title" placeholder="כותרת למערך (למשל: אימון פתיחת עונה)"/>
-    <h3>מאגר המשחקים</h3>
-    <div id="bank" class="bankgrid"></div>
-    <h3 style="margin-top:2rem;">המערך שלך</h3>
-    <div id="plan"></div>
-    <button id="save-plan" class="primary" style="width:100%; margin-top:1rem;">שמור מערך</button>
+<main>
+  <div class="builder-grid">
+    <aside class="panel">
+      <h2>ספריית משחקים</h2>
+      <div class="filters">
+        <input id="searchInput" placeholder="חיפוש לפי שם…" />
+        <select id="typeFilter">
+          <option value="">סיווג לפי סוג</option>
+          <option value="warmup">משחק חימום</option>
+          <option value="main">משחק מרכזי</option>
+        </select>
+      </div>
+      <div class="library">
+        <div id="gameGrid" class="grid"></div>
+      </div>
+    </aside>
+
+    <section class="panel">
+      <h2>המערך שלי</h2>
+      <div class="filters" style="margin-bottom:14px">
+        <input id="lessonName" placeholder="שם המערך" />
+        <button id="saveBtn" class="btn" style="border-color:#d946ef;color:#d946ef">שמור מערך</button>
+      </div>
+      <div class="sections">
+        <div class="section">
+          <h3>חימום</h3>
+          <div id="warmupDrop" class="drop"></div>
+        </div>
+        <div class="section">
+          <h3>עיקרי</h3>
+          <div id="mainDrop" class="drop"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+<div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true">
+  <div class="modal">
+    <header>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;">
+        <h3 id="modalTitle" style="margin:0;font-size:18px"></h3>
+        <button class="btn" id="modalClose">סגור</button>
+      </div>
+    </header>
+    <div class="content">
+      <img id="modalImage" class="hero" alt="" />
+      <div class="meta-line" id="modalMeta"></div>
+      <ul id="modalBullets"></ul>
+    </div>
   </div>
 </div>
-<div id="details-modal" class="modal-backdrop"><div class="modal-content" id="modal-box"></div></div>
+<footer> &copy; 2025 NIKA. כל הזכויות שמורות. </footer>
 
 <script>
-    const $ = (id) => document.getElementById(id);
-    let allGames = [], lessonPlan = [], currentUser = null, currentLessonId = null;
+// === קוד JS המקורי של האפליקציה שהוחזר ===
+(() => {
+  const $ = sel => document.querySelector(sel);
+  const gridEl = $('#gameGrid');
+  const typeFilter = $('#typeFilter');
+  const searchInput = $('#searchInput');
+  const warmupDrop = $('#warmupDrop');
+  const mainDrop = $('#mainDrop');
+  const saveBtn = $('#saveBtn');
 
-    async function jsonFetch(url, options = {}) { const r = await fetch(url, { credentials: 'include', headers: { 'Content-Type': 'application/json' }, ...options }); const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.error || 'Request failed'); return d; }
+  const modal = $('#modalBackdrop');
+  const modalTitle = $('#modalTitle');
+  const modalImage = $('#modalImage');
+  const modalMeta  = $('#modalMeta');
+  const modalBullets = $('#modalBullets');
+  $('#modalClose').onclick = () => modal.style.display = 'none';
+  modal.addEventListener('click', (e)=>{ if(e.target === modal) modal.style.display='none'; });
 
-    async function initializePage() {
-        try {
-            const meData = await jsonFetch('/api/auth/me');
-            currentUser = meData.user;
-            if (!currentUser) return location.href = '/auth';
-            $('coachBox').textContent = `מאמן: ${currentUser.fullname || currentUser.email}`;
-            if (currentUser.role === 'admin' && meData.viewAsOrg) { $('return-to-admin').style.display = 'inline-block'; }
+  const state = { games: [], filtered: [], plan: { warmup: [], main: [] } };
+  const toBullets = txt => String(txt||'').replace(/\r/g,'').split('\n').map(s=>s.trim()).filter(Boolean);
 
-            const builderData = await jsonFetch('/api/builder-data/nika');
-            allGames = builderData.games;
-            renderBank();
+  function renderGrid(){
+    gridEl.innerHTML = '';
+    state.filtered.forEach(g => {
+      const tile = document.createElement('div'); tile.className = 'tile';
+      const img = document.createElement('img'); img.className='thumb'; img.src = g.image_url ? g.image_url : '/assets/nika-logo.png';
+      const name = document.createElement('div'); name.className='name'; name.textContent = g.name || '';
+      const chip = document.createElement('span'); chip.className='chip'; chip.textContent = g.type==='warmup'?'משחק חימום':'משחק מרכזי';
 
-            const urlParams = new URLSearchParams(window.location.search);
-            currentLessonId = urlParams.get('id');
-            if (currentLessonId) {
-                const { lesson_plan } = await jsonFetch(`/api/lesson-plans/${currentLessonId}`);
-                const planData = JSON.parse(lesson_plan.plan_data);
-                $('plan-name').value = lesson_plan.name;
-                document.title = `עריכת מערך: ${lesson_plan.name}`;
-                lessonPlan = (planData.games || []).map(id => lesson_plan.items.find(g => g.id === id)).filter(Boolean);
-                renderPlan();
-            }
-        } catch (error) { console.error("Init Error:", error); alert('שגיאה בטעינת הדף'); }
-    }
+      const actions = document.createElement('div'); actions.className='actions';
+      const addW = document.createElement('button'); addW.className='btn'; addW.textContent='לחימום';
+      const addM = document.createElement('button'); addM.className='btn'; addM.textContent='לעיקרי';
+      const details = document.createElement('button'); details.className='btn primary'; details.textContent='פרטים';
+      addW.onclick = ()=> addTo('warmup', g);
+      addM.onclick = ()=> addTo('main', g);
+      details.onclick = ()=> openDetails(g);
+      actions.append(addW, addM, details);
 
-    function renderBank() {
-        const bankEl = $('bank'); bankEl.innerHTML = '';
-        allGames.forEach(game => {
-            const item = document.createElement('div'); item.className = 'bankitem';
-            item.innerHTML = `<strong>${game.name}</strong><div style='margin-top:8px'><button class='add-btn' data-id='${game.id}'>➕ הוסף למערך</button><button class='details-btn' data-id='${game.id}' style='background:var(--muted); margin-right: 5px;'>פרטים</button></div>`;
-            bankEl.appendChild(item);
-        });
-    }
-    
-    function renderPlan() {
-        const planEl = $('plan'); planEl.innerHTML = '';
-        lessonPlan.forEach((game, i) => {
-            const el = document.createElement('div'); el.className = 'plan-item';
-            el.innerHTML = `${game.image_url ? `<img src='${game.image_url}'>` : `<div style='width:72px;height:72px;border:1px dashed #ccc;'></div>`}<div><strong>${i + 1}. ${game.name}</strong></div><button class='del-btn' data-index='${i}' style='margin-inline-start:auto;background:#ef4444;color:#fff'>מחק</button>`;
-            planEl.appendChild(el);
-        });
-    }
-
-    function showDetailsModal(game) { const modalBox = $('modal-box'); modalBox.innerHTML = `<h2>${game.name}</h2><p><strong>ציוד:</strong> ${game.equipment || 'ללא'}</p><hr><p>${(game.description || '').replace(/\n/g, '<br>')}</p>${game.image_url ? `<img src="${game.image_url}" style="width:100%;">` : ''}<button onclick="closeDetailsModal()" style="width:100%; margin-top: 15px;">סגור</button>`; $('details-modal').style.display = 'grid'; }
-    function closeDetailsModal() { $('details-modal').style.display = 'none'; }
-    $('details-modal').onclick = (e) => { if (e.target.id === 'details-modal') closeDetailsModal(); };
-
-    $('bank').addEventListener('click', (e) => {
-        const target = e.target;
-        const gameId = parseInt(target.dataset.id);
-        if (target.classList.contains('add-btn')) { const game = allGames.find(g => g.id === gameId); if (game && !lessonPlan.find(p => p.id === gameId)) { lessonPlan.push(game); renderPlan(); } }
-        if (target.classList.contains('details-btn')) { const game = allGames.find(g => g.id === gameId); if(game) showDetailsModal(game); }
+      tile.append(img, name, chip, actions);
+      gridEl.appendChild(tile);
     });
-    
-    $('plan').addEventListener('click', (e) => { if(e.target.classList.contains('del-btn')) { const index = parseInt(e.target.dataset.index); lessonPlan.splice(index, 1); renderPlan(); } });
+  }
 
-    $('save-plan').addEventListener('click', async () => {
-        const payload = { name: $('plan-name').value.trim(), plan_data: { games: lessonPlan.map(g => g.id) } };
-        if (!payload.name) return alert('אנא הזן כותרת למערך.');
-        const method = currentLessonId ? 'PUT' : 'POST';
-        const url = currentLessonId ? `/api/lesson-plans/${currentLessonId}` : '/api/lesson-plans';
-        try {
-            await jsonFetch(url, { method: method, body: JSON.stringify(payload) });
-            alert('המערך נשמר בהצלחה!');
-            if (!currentLessonId) { lessonPlan = []; renderPlan(); $('plan-name').value = ''; }
-            else { location.href = '/my-lessons-nika'; }
-        } catch (error) { alert(`שגיאה בשמירת המערך: ${error.message}`); }
+  function openDetails(g){
+    modalTitle.textContent = g.name || '';
+    modalImage.style.display = (g.image_url || '').length ? 'block' : 'none';
+    modalImage.src = g.image_url || '';
+    modalMeta.textContent = `סוג: ${g.type==='warmup'?'משחק חימום':'משחק מרכזי'}`;
+    modalBullets.innerHTML = '';
+    toBullets(g.description).forEach(line => {
+      const li = document.createElement('li'); li.textContent = line; modalBullets.appendChild(li);
     });
+    modal.style.display = 'flex';
+  }
 
-    initializePage();
+  function addTo(sec, g){
+    state.plan[sec].push(g.id);
+    renderPlan();
+  }
+
+  function renderPlan(){
+    const paint = (wrap, ids) => {
+      wrap.innerHTML = '';
+      ids.forEach(id => {
+        const g = state.games.find(x=>x.id===id);
+        if (!g) return;
+        const item = document.createElement('div'); item.className='lesson-item';
+        const info = document.createElement('div');
+        const h5 = document.createElement('h5'); h5.textContent = g.name;
+        const meta = document.createElement('div'); meta.className='meta'; meta.textContent = `סוג: ${g.type==='warmup'?'משחק חימום':'משחק מרכזי'}`;
+        info.append(h5, meta);
+        const del = document.createElement('button'); del.className='btn'; del.textContent='הסר';
+        del.onclick = () => { const arr = (wrap===warmupDrop?state.plan.warmup:state.plan.main); const idx = arr.indexOf(id); if(idx>-1){arr.splice(idx,1); renderPlan();} };
+        item.append(info, del);
+        wrap.appendChild(item);
+      });
+    };
+    paint(warmupDrop, state.plan.warmup);
+    paint(mainDrop, state.plan.main);
+  }
+
+  function applyFilters(){
+    const t = typeFilter.value.trim();
+    const q = searchInput.value.trim().toLowerCase();
+    state.filtered = state.games.filter(g => {
+      if (t && g.type !== t) return false;
+      if (q && !String(g.name||'').toLowerCase().includes(q)) return false;
+      return true;
+    });
+    renderGrid();
+  }
+
+  async function loadData(){
+    const r = await fetch('/api/builder-data/nika');
+    if (!r.ok){ alert('שגיאה בטעינת נתונים'); return; }
+    const {games} = await r.json();
+    state.games = games.map(g => {
+      let url = g.image_url || '';
+      if (url && !url.startsWith('http')) url = '/'+url.replace(/^\//,'');
+      return {...g, image_url: url};
+    });
+    state.filtered = [...state.games];
+    renderGrid();
+  }
+
+  saveBtn.onclick = async () => {
+    const payload = { name: (document.getElementById('lessonName').value.trim() || 'ללא שם'), plan_data: { warmup: state.plan.warmup, main: state.plan.main } };
+    const r = await fetch('/api/lesson-plans', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+    const data = await r.json();
+    if (!r.ok){ alert('שגיאה בשמירת המערך: ' + (data.error||r.status)); return; }
+    alert('המערך נשמר!');
+    window.location.href = '/my-lessons-nika';
+  };
+
+  typeFilter.onchange = applyFilters;
+  searchInput.oninput = applyFilters;
+  loadData();
+
+})();
 </script>
+
+<script>
+  // === קוד JS להצגת שם משתמש, התנתקות וכפתור מנהל ===
+  document.addEventListener('DOMContentLoaded', function() {
+    const userNameElement = document.getElementById('user-name-placeholder');
+    const returnToAdminBtn = document.getElementById('return-to-admin-btn');
+    
+    fetch('/api/auth/me')
+      .then(response => response.ok ? response.json() : Promise.reject('Not logged in'))
+      .then(data => {
+        if (data.user && data.user.fullname) {
+          userNameElement.textContent = data.user.fullname;
+        }
+        if (data.viewAsOrg) {
+          returnToAdminBtn.style.display = 'inline-flex';
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching user status:', error);
+        userNameElement.textContent = 'אורח';
+      });
+
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', function(event) {
+        event.preventDefault();
+        fetch('/api/auth/logout')
+          .then(() => { window.location.href = '/nika-login.html'; })
+          .catch(error => console.error('Logout failed:', error));
+      });
+    }
+  });
+</script>
+
 </body>
 </html>

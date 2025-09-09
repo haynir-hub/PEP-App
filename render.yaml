@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: pep-app-demo
+    env: node
+    plan: free
+    region: frankfurt
+    buildCommand: "npm run build"
+    startCommand: "npm start"
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_DIR
+        value: /opt/render/project/src/data
+    healthCheckPath: /health
+    autoDeploy: true
+    buildFilter:
+      paths:
+        - apt.txt

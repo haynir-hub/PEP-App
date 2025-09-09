@@ -1,206 +1,345 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
- <meta charset="utf-8" />
- <meta name="viewport" content="width=device-width, initial-scale=1" />
- <title>בניית מערך שיעור — PE.P</title>
- <style>
-    :root{--bg:#f4f7fb;--ink:#0b1324;--muted:#64748b;--line:#e2e8f0;--brand:#111827;--ok:#10b981;--card:#fff} *{box-sizing:border-box} body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,Heebo,Arial;color:var(--ink)} header{position:sticky;top:0;background:#ffffffe6;backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:12px 16px;display:flex;gap:10px;align-items:center} .wrap{max-width:960px;margin:16px auto;padding:0 14px} button,select,input,textarea{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#fff; cursor: pointer;} button.primary{background:linear-gradient(90deg,var(--brand),#1f2937);border:0;color:#fff;font-weight:900} .paper{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.05);padding:18px} .title{font-size:26px;font-weight:900;margin:0 0 6px; width: 100%;} .meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0} .section{margin-top:16px} .section h3{margin:0 0 8px;border-bottom:2px solid var(--line);padding-bottom:6px} .exercise{border:1px solid var(--line);border-radius:12px;padding:10px;margin:8px 0;display:grid;grid-template-columns:72px 1fr auto;gap:10px;align-items:center} .exercise img{width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--line)} .exercise .act button{margin-inline-start:6px} textarea.notes{width:100%;min-height:100px} details.bank{margin:12px 0} .bankbox{border:1px dashed var(--line);border-radius:12px;padding:10px} .bankgrid{display:grid;grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));gap:8px} .bankitem{border:1px solid var(--line);border-radius:12px;padding:8px} .bar{position:sticky;bottom:10px;display:flex;gap:8px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;box-shadow:0 20px 60px rgba(0,0,0,.08);margin-top:12px} .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;place-items:center;z-index:100;padding:16px;} .modal-content{background:#fff;padding:20px;border-radius:16px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;}
- </style>
+  <meta charset="UTF-8" />
+  <title>PEP – בונה מערכים</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#f8fafc; --card:#ffffff; --text:#0f172a; --muted:#475569; --accent:#2563eb;
+      --border:#e5e7eb; --chip:#eef2ff;
+      --btn:#0f172a; --btnbg:#ffffff; --btnbd:#e5e7eb;
+      --pill-bg:#ffffff; --pill-shadow:0 8px 22px rgba(2,6,23,.08);
+      --danger-bg: #fee2e2; --danger-text: #b91c1c;
+      --admin-bg: #fef9c3; --admin-text: #713f12;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;font-family:Heebo,system-ui,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    header{ display:flex;align-items:center;justify-content:space-between;gap:16px; padding:16px 20px;background:#fff;border-bottom:1px solid var(--border); position:static;top:0;z-index:10; }
+    .brand{display:flex;align-items:center;gap:12px}
+    .brand img{height:138px;width:auto;object-fit:contain}
+    .brand h1{font-size:20px;margin:0; line-height: 1.2;}
+    .user-welcome { font-size: 16px; color: var(--muted); font-weight: 500; }
+    #user-name-placeholder { font-weight: 700; color: var(--accent); }
+    .nav-pills{display:flex;gap:12px; align-items: center;}
+    .pill{ background:var(--pill-bg); border:1px solid var(--border); box-shadow:var(--pill-shadow); color:#0f172a; padding:10px 18px; border-radius:16px; font-size:16px; font-weight:800; cursor:pointer; text-decoration:none; transition:transform .05s ease; }
+    .pill:active{transform:translateY(1px)}
+    .pill.logout { background-color: var(--danger-bg); color: var(--danger-text); border-color: #fecaca; }
+    .pill.admin-return { background-color: var(--admin-bg); color: var(--admin-text); border-color: #fde68a; display: none; }
+    main{max-width:1300px;margin:20px auto;padding:0 16px}
+    .builder-grid{display:grid;grid-template-columns: 1.2fr 1fr; gap:20px}
+    .panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px}
+    .panel h2{margin:0 0 12px;font-size:18px}
+    .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    .filters select,.filters input{ padding:10px 12px;border:1px solid var(--border);border-radius:12px;font-size:14px;min-width:170px;background:#fff }
+    .filters input{min-width:220px}
+    .library{max-height:72vh;overflow:auto;padding-inline:4px}
+    .grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(170px,1fr)); gap:14px; }
+    .tile{ background:#fff;border:1px solid var(--border);border-radius:16px;padding:12px; display:flex;flex-direction:column;gap:8px; transition:box-shadow .15s; }
+    .tile:hover{box-shadow:0 10px 22px rgba(0,0,0,.06)}
+    .thumb{ width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px;border:1px solid var(--border);background:#f3f4f6 }
+    .name{font-size:14px;font-weight:900;margin:2px 0 0;line-height:1.25}
+    .chip{background:var(--chip);color:#1d4ed8;border:1px solid #c7d2fe;padding:4px 10px;border-radius:999px;font-size:12px;display:inline-block}
+    .actions{ display:grid; grid-template-columns: repeat(4, 1fr); gap:6px; margin-top:auto; }
+    .btn{ border:1px solid var(--btnbd);background:var(--btnbg);color:var(--btn); border-radius:10px;padding:8px 4px;font-size:12px;cursor:pointer;transition:.15s; text-align:center; white-space:nowrap; }
+    .btn:hover{filter:brightness(0.99)}
+    .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+    .sections{display:grid;gap:12px}
+    .section{background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px}
+    .section h3{margin:0 0 10px;font-size:16px}
+    .drop{min-height:96px;border:1px dashed #cbd5e1;border-radius:12px;padding:10px;display:grid;gap:10px}
+    .lesson-item{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;background:#f9fafb;border:1px solid var(--border);border-radius:12px;padding:10px}
+    .lesson-item h5{margin:0;font-size:15px}
+    .lesson-item .meta{font-size:12px;color:var(--muted)}
+    .lesson-notes{width:100%;border:1px solid var(--border);border-radius:12px;background:#fff;padding:12px;font-size:14px;min-height:140px}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:50;}
+    .modal{width:min(740px,92vw);max-height:85vh;overflow:auto;background:#fff;border-radius:16px;border:1px solid var(--border);padding:16px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+    .modal header{position:sticky;top:-16px;background:#fff;border-bottom:1px solid var(--border);border-radius:14px 14px 0 0;}
+    .modal h3{margin:0;font-size:18px}
+    .modal .content{padding:12px}
+    .modal .hero{width:100%;height:260px;border-radius:12px;object-fit:cover;border:1px solid var(--border);background:#f3f4f6}
+    .modal .meta-line{margin:10px 0;color:#4b5563;font-size:14px}
+    .modal ul{margin:8px 0 0;padding:0 18px 0 0;list-style:disc;list-style-position:inside}
+    .modal li{margin:4px 0;font-size:14px}
+    .close{cursor:pointer;border:1px solid var(--btnbd);background:var(--btnbg);color:var(--btn);border-radius:10px;padding:8px 12px}
+    footer { text-align: center; padding: 24px; margin-top: 32px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--border); }
+  </style>
 </head>
 <body>
 <header>
-  <strong>בניית מערך (PEP)</strong>
-  <a href="/my-lessons-pep"><button>המערכים שלי</button></a>
-  <div style="margin-inline-start:auto"></div>
-  <a id="return-to-admin" href="/api/auth/return-to-admin" style="display:none; background-color: #ffc107; color: black; padding: 8px 12px; border-radius: 8px; font-weight: bold; text-decoration: none;">חזרה לניהול</a>
-  <div id="teacherBox" class="muted">מורה: —</div>
-</header>
-<div class="wrap">
- <details class="bank" open><summary><strong>➕ הוספת תרגילים מבנק התרגילים</strong></summary>
-  <div class="bankbox">
-    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
-      <label>סנן לפי נושא:</label><select id="subject-filter"></select>
+  <div class="brand">
+    <img src="/assets/pep-logo.png" alt="PEP">
+    <div>
+        <h1>בונה מערכים – PEP</h1>
+        <div class="user-welcome">שלום, <span id="user-name-placeholder">טוען...</span></div>
     </div>
-    <div id="bank" class="bankgrid"></div>
   </div>
- </details>
- <div class="paper" id="doc">
-  <input id="plan-name" class="title" placeholder="כותרת מערך שיעור (למשל: כדורסל — שיעור 1)"/>
-  <div class="meta">
-    <div><label>נושא השיעור</label><input id="topic" placeholder="לדוגמה: כדרור והובלה"/></div>
+  <div class="nav-pills">
+    <a href="/api/auth/return-to-admin" id="return-to-admin-btn" class="pill admin-return">חזרה לממשק ניהול</a>
+    <a class="pill" href="/my-lessons-pep">המערכים שלי</a>
+    <a class="pill logout" href="#" id="logout-btn">התנתק</a>
   </div>
-  <div class="section"><h3>ציוד נדרש (נאסף אוטומטית)</h3><div id="equipment" class="muted">אין עדיין ציוד.</div></div>
-  <div class="section" id="sec-warmup"><h3>חימום</h3><div id="warmup"></div></div>
-  <div class="section" id="sec-main"><h3>עיקרי</h3><div id="main"></div></div>
-  <div class="section" id="sec-finish"><h3>סיום</h3><div id="finish"></div></div>
-  <div class="section"><h3>הערות המורה</h3><textarea id="notes" class="notes" placeholder="הערות, דגשים פדגוגיים..."></textarea></div>
- </div>
- <div class="bar">
-  <button id="save-plan" class="primary">שמור מערך</button>
- </div>
- <div id="details-modal" class="modal-backdrop"><div class="modal-content" id="modal-box"></div></div>
+</header>
+<main>
+  <div class="builder-grid">
+    <aside class="panel">
+      <h2>ספריית תרגילים</h2>
+      <div class="filters">
+        <input id="searchInput" placeholder="חיפוש לפי שם…" />
+        <select id="typeFilter">
+          <option value="">סיווג לפי סוג</option>
+          <option value="warmup">חימום</option>
+          <option value="main">עיקרי</option>
+          <option value="finish">סיום</option>
+        </select>
+        <select id="subjectFilter">
+          <option value="">סיווג לפי נושא</option>
+        </select>
+      </div>
+      <div class="library">
+        <div id="exerciseGrid" class="grid"></div>
+      </div>
+    </aside>
+
+    <section class="panel">
+      <h2>המערך שלי</h2>
+
+      <div class="filters" style="margin-bottom:10px">
+        <input id="lessonName" placeholder="שם המערך" />
+        <input id="lessonTopic" placeholder="נושא/כיתה (לא חובה)" />
+      </div>
+      <textarea id="lessonNotes" class="lesson-notes" placeholder="תיאור/הערות למערך (אופציונלי) – למשל דגשים, התאמות, בטיחות וכו'."></textarea>
+      <div class="filters" style="margin-top:10px">
+        <button id="saveBtn" class="btn primary">שמור מערך</button>
+      </div>
+
+      <div class="sections">
+        <div class="section">
+          <h3>חימום</h3>
+          <div id="warmupDrop" class="drop"></div>
+        </div>
+        <div class="section">
+          <h3>עיקרי</h3>
+          <div id="mainDrop" class="drop"></div>
+        </div>
+        <div class="section">
+          <h3>סיום</h3>
+          <div id="finishDrop" class="drop"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true">
+  <div class="modal">
+    <header>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;">
+        <h3 id="modalTitle"></h3>
+        <button class="close" id="modalClose">סגור</button>
+      </div>
+    </header>
+    <div class="content">
+      <img id="modalImage" class="hero" alt="" />
+      <div class="meta-line" id="modalMeta"></div>
+      <ul id="modalBullets"></ul>
+    </div>
+  </div>
 </div>
+<footer> &copy; 2025 PE.P. כל הזכויות שמורות. </footer>
+
 <script>
-    const $ = (id) => document.getElementById(id);
-    let allExercises = [], allSubjects = [], lessonPlan = { warmup: [], main: [], finish: [] }, currentUser = null, currentLessonId = null;
+// === קוד JS המקורי של האפליקציה שהוחזר ===
+(() => {
+  const $ = sel => document.querySelector(sel);
+  const gridEl = $('#exerciseGrid');
+  const subjectFilter = $('#subjectFilter');
+  const typeFilter = $('#typeFilter');
+  const searchInput = $('#searchInput');
+  const warmupDrop = $('#warmupDrop');
+  const mainDrop = $('#mainDrop');
+  const finishDrop = $('#finishDrop');
+  const saveBtn = $('#saveBtn');
+  const lessonName = $('#lessonName');
+  const lessonTopic = $('#lessonTopic');
+  const lessonNotes = $('#lessonNotes');
 
-    async function jsonFetch(url, options = {}) {
-        const response = await fetch(url, { credentials: 'include', headers: { 'Content-Type': 'application/json' }, ...options });
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(data.error || 'Request failed');
-        return data;
-    }
+  const modal = $('#modalBackdrop');
+  const modalTitle = $('#modalTitle');
+  const modalImage = $('#modalImage');
+  const modalMeta  = $('#modalMeta');
+  const modalBullets = $('#modalBullets');
+  $('#modalClose').onclick = () => modal.style.display = 'none';
+  modal.addEventListener('click', (e)=>{ if(e.target === modal) modal.style.display='none'; });
 
-    async function initializePage() {
-        try {
-            const meData = await jsonFetch('/api/auth/me');
-            currentUser = meData.user;
-            if (!currentUser) return location.href = '/auth';
-            $('teacherBox').textContent = `מורה: ${currentUser.fullname || currentUser.email}`;
-            if (currentUser.role === 'admin' && meData.viewAsOrg) {
-                $('return-to-admin').style.display = 'inline-block';
-            }
+  const state = {
+    exercises: [],
+    filtered: [],
+    plan: { warmup: [], main: [], finish: [] }
+  };
 
-            const builderData = await jsonFetch('/api/builder-data/pep');
-            allExercises = builderData.exercises;
-            allSubjects = builderData.subjects;
-            
-            populateSubjectFilter();
-            renderBank();
+  const toBullets = txt => String(txt||'').replace(/\r/g,'').split('\n').map(s=>s.trim()).filter(Boolean);
 
-            const urlParams = new URLSearchParams(window.location.search);
-            currentLessonId = urlParams.get('id');
-            if (currentLessonId) {
-                const { lesson_plan } = await jsonFetch(`/api/lesson-plans/${currentLessonId}`);
-                const planData = JSON.parse(lesson_plan.plan_data);
-                
-                $('plan-name').value = lesson_plan.name;
-                $('topic').value = lesson_plan.topic;
-                $('notes').value = lesson_plan.notes;
-                document.title = `עריכת מערך: ${lesson_plan.name}`;
+  function renderGrid(){
+    gridEl.innerHTML = '';
+    state.filtered.forEach(ex => {
+      const tile = document.createElement('div');
+      tile.className = 'tile';
 
-                lessonPlan.warmup = (planData.warmup || []).map(id => lesson_plan.items.find(ex => ex.id === id)).filter(Boolean);
-                lessonPlan.main = (planData.main || []).map(id => lesson_plan.items.find(ex => ex.id === id)).filter(Boolean);
-                lessonPlan.finish = (planData.finish || []).map(id => lesson_plan.items.find(ex => ex.id === id)).filter(Boolean);
-                
-                renderPlan();
-            }
-        } catch (error) { 
-            console.error("Initialization Error:", error);
-            alert("אירעה שגיאה בטעינת הדף. נסה לרענן.");
-        }
-    }
+      const img = document.createElement('img');
+      img.className = 'thumb';
+      img.src = ex.image_url ? ex.image_url : '/assets/pep-logo.png';
+      img.alt = '';
 
-    function populateSubjectFilter() { $('subject-filter').innerHTML = '<option value="">כל הנושאים</option>' + allSubjects.map(s => `<option value="${s.name}">${s.name}</option>`).join(''); }
-    
-    function renderBank() {
-        const bankEl = $('bank');
-        const selectedSubject = $('subject-filter').value;
-        const filteredExercises = selectedSubject ? allExercises.filter(ex => ex.subject === selectedSubject) : allExercises;
-        bankEl.innerHTML = '';
-        filteredExercises.forEach(ex => {
-            const item = document.createElement('div');
-            item.className = 'bankitem';
-            item.innerHTML = `<strong>${ex.name}</strong><div class='muted'>${ex.category}</div>
-                <div style='display:flex;flex-wrap:wrap;gap:6px;margin-top:6px'>
-                    <button class='add-btn' data-id='${ex.id}' data-part='warmup'>➕ חימום</button>
-                    <button class='add-btn' data-id='${ex.id}' data-part='main'>➕ עיקרי</button>
-                    <button class='add-btn' data-id='${ex.id}' data-part='finish'>➕ סיום</button>
-                    <button class='details-btn' data-id='${ex.id}' style='background:var(--muted);'>פרטים</button>
-                </div>`;
-            bankEl.appendChild(item);
-        });
-    }
-    
-    function renderPlan() {
-        ['warmup', 'main', 'finish'].forEach(key => {
-            const box = $(key);
-            box.innerHTML = '';
-            (lessonPlan[key] || []).forEach((ex, i) => {
-                const el = document.createElement('div');
-                el.className = 'exercise';
-                el.innerHTML = `${ex.image_url ? `<img src='${ex.image_url}'>` : `<div style='width:72px;height:72px;border:1px dashed var(--line);'></div>`}
-                    <div><strong>${i + 1}. ${ex.name}</strong><div class='muted'>${ex.category}</div></div>
-                    <div class='act'><button class='del-btn' data-part='${key}' data-index='${i}' style='background:#ef4444;color:#fff'>מחק</button></div>`;
-                box.appendChild(el);
-            });
-        });
-        updateEquipment();
-    }
-    
-    function updateEquipment() {
-        const equipmentSet = new Set();
-        Object.values(lessonPlan).flat().forEach(ex => { if(ex.equipment) ex.equipment.split(',').forEach(item => equipmentSet.add(item.trim())) });
-        $('equipment').textContent = equipmentSet.size ? Array.from(equipmentSet).join(', ') : 'אין עדיין ציוד.';
-    }
+      const name = document.createElement('div');
+      name.className = 'name';
+      name.textContent = ex.name || '';
 
-    $('bank').addEventListener('click', (e) => {
-        const target = e.target;
-        const id = parseInt(target.dataset.id);
-        if (target.classList.contains('add-btn')) {
-            const part = target.dataset.part;
-            const exercise = allExercises.find(ex => ex.id === id);
-            if (exercise && lessonPlan[part] && !lessonPlan[part].find(p => p.id === id)) {
-                lessonPlan[part].push(exercise);
-                renderPlan();
-            }
-        }
-        if (target.classList.contains('details-btn')) {
-            const exercise = allExercises.find(ex => ex.id === id);
-            if(exercise) showDetailsModal(exercise);
-        }
+      const chip = document.createElement('span');
+      chip.className = 'chip';
+      chip.textContent = ex.type === 'warmup' ? 'חימום' : (ex.type === 'finish' ? 'סיום' : 'עיקרי');
+
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+      const addW = document.createElement('button'); addW.className='btn'; addW.textContent='לחימום';
+      const addM = document.createElement('button'); addM.className='btn'; addM.textContent='לעיקרי';
+      const addF = document.createElement('button'); addF.className='btn'; addF.textContent='לסיום';
+      const details = document.createElement('button'); details.className='btn primary'; details.textContent='פרטים';
+
+      addW.onclick = ()=> addTo('warmup', ex);
+      addM.onclick = ()=> addTo('main', ex);
+      addF.onclick = ()=> addTo('finish', ex);
+      details.onclick = ()=> openDetails(ex);
+
+      actions.append(addW, addM, addF, details);
+
+      tile.append(img, name, chip, actions);
+      gridEl.appendChild(tile);
     });
-    
-    $('doc').addEventListener('click', (e) => {
-        if(e.target.classList.contains('del-btn')) {
-            const part = e.target.dataset.part;
-            const index = parseInt(e.target.dataset.index);
-            if(lessonPlan[part] && lessonPlan[part][index]) {
-                lessonPlan[part].splice(index, 1);
-                renderPlan();
-            }
-        }
+  }
+
+  function openDetails(ex){
+    modalTitle.textContent = ex.name || '';
+    modalImage.style.display = (ex.image_url || '').length ? 'block' : 'none';
+    modalImage.src = ex.image_url || '';
+    modalMeta.textContent = `סוג: ${ex.type==='warmup'?'חימום':(ex.type==='finish'?'סיום':'עיקרי')}`;
+    modalBullets.innerHTML = '';
+    toBullets(ex.description).forEach(line => {
+      const li = document.createElement('li'); li.textContent = line; modalBullets.appendChild(li);
     });
+    modal.style.display = 'flex';
+  }
 
-    function showDetailsModal(ex) {
-        const modalBox = $('modal-box');
-        modalBox.innerHTML = `<h2>${ex.name}</h2><p><strong>נושא:</strong> ${ex.subject}</p><p><strong>קטגוריה:</strong> ${ex.category}</p><p><strong>ציוד:</strong> ${ex.equipment || 'ללא'}</p><hr><p>${(ex.description || '').replace(/\n/g, '<br>')}</p>${ex.image_url ? `<img src="${ex.image_url}" style="width:100%;">` : ''}<button onclick="closeDetailsModal()" style="width:100%; margin-top: 15px;">סגור</button>`;
-        $('details-modal').style.display = 'grid';
-    }
-    function closeDetailsModal() { $('details-modal').style.display = 'none'; }
-    $('details-modal').onclick = (e) => { if (e.target.id === 'details-modal') closeDetailsModal(); };
+  function addTo(sec, ex){
+    state.plan[sec].push(ex.id);
+    renderPlan();
+  }
 
-    $('save-plan').addEventListener('click', async () => {
-        const plan_data = {
-            warmup: lessonPlan.warmup.map(ex => ex.id),
-            main: lessonPlan.main.map(ex => ex.id),
-            finish: lessonPlan.finish.map(ex => ex.id),
-        };
-        const payload = { name: $('plan-name').value, topic: $('topic').value, subject: $('subject-filter').value, notes: $('notes').value, plan_data };
-        if (!payload.name) return alert('אנא הזן כותרת למערך השיעור.');
-        
-        const method = currentLessonId ? 'PUT' : 'POST';
-        const url = currentLessonId ? `/api/lesson-plans/${currentLessonId}` : '/api/lesson-plans';
-        
-        try {
-            await jsonFetch(url, { method: method, body: JSON.stringify(payload) });
-            alert('המערך נשמר בהצלחה!');
-            if (!currentLessonId) {
-                lessonPlan = { warmup: [], main: [], finish: [] };
-                renderPlan();
-                $('plan-name').value = ''; $('topic').value = ''; $('notes').value = '';
-            } else {
-                location.href = '/my-lessons-pep';
-            }
-        } catch (error) { 
-            alert(`שגיאה בשמירת המערך: ${error.message}`); 
-        }
+  function renderPlan(){
+    const paint = (wrap, ids, label) => {
+      wrap.innerHTML = '';
+      ids.forEach(id => {
+        const ex = state.exercises.find(e=>e.id===id);
+        if (!ex) return;
+        const item = document.createElement('div'); item.className='lesson-item';
+        const info = document.createElement('div');
+        const h5 = document.createElement('h5'); h5.textContent = ex.name;
+        const meta = document.createElement('div'); meta.className='meta'; meta.textContent = `סוג: ${label}`;
+        info.append(h5, meta);
+        const del = document.createElement('button'); del.className='btn'; del.textContent='הסר';
+        del.onclick = () => { const arr = (wrap===warmupDrop?state.plan.warmup:(wrap===mainDrop?state.plan.main:state.plan.finish)); const idx = arr.indexOf(id); if(idx>-1){arr.splice(idx,1); renderPlan();} };
+        item.append(info, del);
+        wrap.appendChild(item);
+      });
+    };
+    paint(warmupDrop, state.plan.warmup, 'חימום');
+    paint(mainDrop, state.plan.main, 'עיקרי');
+    paint(finishDrop, state.plan.finish, 'סיום');
+  }
+
+  function applyFilters(){
+    const s = subjectFilter.value.trim();
+    const t = typeFilter.value.trim();
+    const q = searchInput.value.trim().toLowerCase();
+    state.filtered = state.exercises.filter(ex => {
+      if (s && ex.subject !== s) return false;
+      if (t && ex.type !== t) return false;
+      if (q && !String(ex.name||'').toLowerCase().includes(q)) return false;
+      return true;
     });
+    renderGrid();
+  }
 
-    $('subject-filter').onchange = renderBank;
-    
-    initializePage();
+  async function loadData(){
+    const r = await fetch('/api/builder-data/pep');
+    if (!r.ok){ alert('שגיאה בטעינת נתונים'); return; }
+    const {exercises, subjects} = await r.json();
+    state.exercises = exercises.map(e => {
+      let url = e.image_url || '';
+      if (url && !url.startsWith('http')) url = '/'+url.replace(/^\//,'');
+      return {...e, image_url: url};
+    });
+    subjects.forEach(s => {
+      const opt = document.createElement('option'); opt.value = s.name; opt.textContent = s.name; subjectFilter.appendChild(opt);
+    });
+    state.filtered = [...state.exercises];
+    renderGrid();
+  }
+
+  saveBtn.onclick = async () => {
+    const payload = {
+      name: lessonName.value.trim() || 'ללא שם',
+      topic: lessonTopic.value.trim(),
+      notes: lessonNotes.value.trim(),
+      plan_data: { warmup: state.plan.warmup, main: state.plan.main, finish: state.plan.finish }
+    };
+    const r = await fetch('/api/lesson-plans', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+    const data = await r.json();
+    if (!r.ok){ alert('שגיאה בשמירת המערך: ' + (data.error||r.status)); return; }
+    alert('המערך נשמר!');
+    window.location.href = '/my-lessons-pep';
+  };
+
+  subjectFilter.onchange = applyFilters;
+  typeFilter.onchange = applyFilters;
+  searchInput.oninput = applyFilters;
+  loadData();
+})();
 </script>
+
+<script>
+  // === קוד JS להצגת שם משתמש, התנתקות וכפתור מנהל ===
+  document.addEventListener('DOMContentLoaded', function() {
+    const userNameElement = document.getElementById('user-name-placeholder');
+    const returnToAdminBtn = document.getElementById('return-to-admin-btn');
+    
+    fetch('/api/auth/me')
+      .then(response => response.ok ? response.json() : Promise.reject('Not logged in'))
+      .then(data => {
+        if (data.user && data.user.fullname) {
+          userNameElement.textContent = data.user.fullname;
+        }
+        if (data.viewAsOrg) {
+          returnToAdminBtn.style.display = 'inline-flex';
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching user status:', error);
+        userNameElement.textContent = 'אורח';
+      });
+
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', function(event) {
+        event.preventDefault();
+        fetch('/api/auth/logout')
+          .then(() => { window.location.href = '/auth.html'; })
+          .catch(error => console.error('Logout failed:', error));
+      });
+    }
+  });
+</script>
+
 </body>
 </html>

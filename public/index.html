@@ -3,176 +3,349 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>PE.P — בונים שיעור שנראה מקצועי ומוכן לכיתה</title>
-  <meta name="description" content="PE.P — מערכת למורים לבניית מערכי שיעור חכמים: חימום/עיקרי/סיום, בנק תרגילים עם תמונות, ייצוא PDF ממותג עם שם המורה. מתאים לבתי ספר, צוותים ומורים בודדים."/>
+  <title>PE.P | הדרך המהירה והמרשימה ביותר לבנות מערך שיעור</title>
+  <meta name="description" content="הפלטפורמה למורים שרוצים ליצור מערכי שיעור מקצועיים ללא מאמץ. חסכו זמן, שדרגו את הנראות וקבלו PDF ממותג ומוכן לכיתה."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;900&display=swap" rel="stylesheet">
   <style>
-    :root{--slate:#0e1726;--slate2:#162033;--ink:#eef3ff;--muted:#a7b3c9;--line:#263349;--c1:#69c7ff;--c2:#8fa3ff;--c3:#5be2b2;--cta:#111827;--gold:#f59e0b}
-    *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui,-apple-system,Heebo,Segoe UI,Arial;background:linear-gradient(180deg,var(--slate),var(--slate2));color:var(--ink)}
-    a{text-decoration:none;color:inherit}
-    .wrap{max-width:1100px;margin:0 auto;padding:0 16px}
+    :root {
+      --bg: #ffffff;
+      --bg-soft: #f4f7fc;
+      --text: #111827;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --brand-gradient: linear-gradient(95deg, #3b82f6, #6366f1);
+      --brand-solid: #3b82f6;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: 'Heebo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      font-size: 19px; /* פונט בסיסי גדול יותר */
+    }
+    .wrap { max-width: 1140px; margin: 0 auto; padding: 0 20px; }
+    h1, h2, h3, h4, strong { font-weight: 900; color: var(--text); } /* משקל 900 כברירת מחדל */
+    p { color: var(--text-muted); line-height: 1.75; }
+    
+    /* Utility class for text emphasis */
+    .grad {
+      background: var(--brand-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    strong { color: var(--brand-solid); }
 
     /* ===== Header ===== */
-    header{position:sticky;top:0;background:#0f172acc;backdrop-filter:blur(8px);border-bottom:1px solid var(--line);z-index:10}
-    .head{display:flex;align-items:center;gap:12px;justify-content:space-between;padding:12px 0}
-    .brand{display:flex;align-items:center;gap:10px}
-    .logo{width:42px;height:42px}
-    .btn{padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:transparent;color:#eef3ff;font-weight:900}
-    .btn.primary{background:var(--cta);border-color:var(--cta)}
-    nav a{margin:0 10px;color:#cdd6e7;font-weight:800}
+    header {
+      position: sticky; top: 0; width: 100%;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      z-index: 10;
+      padding: 16px 0;
+    }
+    .head { display: flex; align-items: center; justify-content: space-between; }
+    .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .brand svg { width: 48px; height: 48px; }
+    .brand strong { font-size: 22px; color: var(--text); }
+    
+    .btn {
+      text-decoration: none; padding: 12px 24px; border-radius: 12px;
+      font-weight: 700; font-size: 18px; border: 1px solid var(--border);
+      background: transparent; color: var(--text); cursor: pointer;
+      transition: all 0.2s; white-space: nowrap; display: inline-block;
+    }
+    .btn.primary {
+      background: var(--brand-gradient);
+      border-color: transparent;
+      color: white;
+    }
+    .btn:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
 
-    /* ===== Hero ===== */
-    .hero{display:grid;grid-template-columns:1.02fr .98fr;gap:26px;align-items:center;min-height:78vh}
-    h1{font-size:56px;line-height:1.08;margin:0}
-    h1 .grad{background:linear-gradient(90deg,var(--c1),var(--c2),var(--c3));-webkit-background-clip:text;background-clip:text;color:transparent}
-    .lead{font-size:18px;color:var(--muted);max-width:58ch}
-    .bullets{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
-    .bullet{display:flex;gap:8px;align-items:flex-start}
-    .tick{width:20px;height:20px;border-radius:50%;background:linear-gradient(180deg,#10b981,#34d399);display:grid;place-items:center;font-size:14px}
+    /* ===== Hero Section ===== */
+    .hero { padding: 90px 0 120px; text-align: center; }
+    h1 {
+      font-size: clamp(3.5rem, 7vw, 5rem);
+      line-height: 1.15;
+      margin: 0 auto 24px;
+    }
+    .lead { font-size: 1.4rem; max-width: 60ch; margin: 0 auto 32px; }
+    
+    /* Hero Visual - NEW ANIMATION */
+    .hero-visual {
+        margin-top: 100px;
+        position: relative;
+        height: 400px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .device-frame {
+        width: 70%;
+        max-width: 450px;
+        height: 320px;
+        background: white;
+        border-radius: 24px;
+        border: 1px solid var(--border);
+        box-shadow: 0 20px 60px -10px rgba(0,0,0,0.1);
+        display: flex;
+        flex-direction: column;
+        padding: 16px;
+        gap: 12px;
+    }
+    .lesson-section {
+        flex-grow: 1;
+        background: var(--bg-soft);
+        border: 1px dashed #dbe1ea;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+        color: #a0aec0;
+        font-weight: 700;
+    }
+    .exercise-bubble {
+        position: absolute;
+        width: 60px; height: 60px;
+        border-radius: 50%;
+        background: var(--brand-gradient);
+        opacity: 0;
+        animation: float-and-enter 12s infinite ease-in-out;
+    }
+    .exercise-bubble::before { /* Inner glow effect */
+        content: ''; position: absolute; top: 5px; left: 5px;
+        width: 20px; height: 20px; background: white; border-radius: 50%;
+        opacity: 0.3; filter: blur(5px);
+    }
+    .exercise-bubble:nth-child(2) { animation-delay: -2s; }
+    .exercise-bubble:nth-child(3) { animation-delay: -4s; }
+    .exercise-bubble:nth-child(4) { animation-delay: -6s; }
+    .exercise-bubble:nth-child(5) { animation-delay: -8s; }
+    .exercise-bubble:nth-child(6) { animation-delay: -10s; }
+    
+    @keyframes float-and-enter {
+        0%, 100% { transform: translate(250px, -150px) scale(0); opacity: 0; }
+        10%, 40% { transform: translate(var(--x-start), var(--y-start)) scale(1); opacity: 0.8; }
+        50% { transform: translate(0, 0) scale(0.5); opacity: 1; }
+        60%, 90% { transform: translate(0, 0) scale(0); opacity: 0; }
+    }
+    
+    .hero-visual:hover .exercise-bubble { animation-duration: 6s; }
+    
+    /* ===== General Section Styling ===== */
+    section { padding: 120px 0; }
+    .section-header { text-align: center; max-width: 70ch; margin: 0 auto 60px; }
+    .section-header h2 { font-size: 3rem; margin-bottom: 16px; }
+    .section-header p { font-size: 1.25rem; }
+    .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; }
+    
+    #how-it-works, #social, #faq { background-color: var(--bg-soft); }
 
-    /* Hero demo */
-    .demo{position:relative;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:linear-gradient(180deg,#101a2c,#0f192a)}
-    .demo::before,.demo::after{content:"";position:absolute;inset:-200% -50% auto -50%;height:400%;background:repeating-linear-gradient(90deg,rgba(105,199,255,.07) 0 1px,transparent 1px 60px);transform:rotate(12deg);animation:slide 22s linear infinite}
-    .demo::after{animation-duration:34s;opacity:.45}
-    @keyframes slide{from{transform:rotate(12deg) translateX(0)}to{transform:rotate(12deg) translateX(-60px)}}
-    .demo-inner{position:relative;z-index:1;display:grid;grid-template-rows:auto 1fr}
-    .demotop{display:flex;gap:8px;align-items:center;padding:12px;border-bottom:1px solid var(--line)}
-    .chip{background:#0f172a;border:1px solid #0b1220;border-radius:10px;padding:6px 10px}
-    .demoarea{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:12px}
-    .democard{border:1px solid var(--line);border-radius:12px;padding:10px;background:linear-gradient(180deg,#0f1a2d,#0d182a)}
-    .democard h4{margin:0 0 4px}
-    .democard p{margin:0;color:#a5b1c7;font-size:13px}
+    .step { text-align: center; }
+    .step h3 { font-size: 1.5rem; }
+    
+    .feature-card {
+      background: var(--bg); border: 2px solid var(--border);
+      border-radius: 20px; padding: 30px; transition: all 0.3s;
+    }
+    .feature-card:hover { transform: translateY(-8px) scale(1.02); box-shadow: 0 10px 30px rgba(0,0,0,0.08); border-color: var(--brand-solid); }
+    .feature-icon {
+        width: 52px; height: 52px; border-radius: 14px;
+        display: grid; place-items: center; background: var(--brand-gradient); margin-bottom: 20px;
+    }
+    .feature-icon svg { width: 30px; height: 30px; color: white; }
+    .feature-card h3 { font-size: 1.5rem; }
+    
+    .quote-card {
+        background: var(--bg); border: 1px solid var(--border);
+        border-radius: 20px; padding: 30px; display: flex; flex-direction: column;
+    }
+    .quote-card p:first-child { font-size: 1.25rem; color: var(--text); flex-grow: 1; }
+    .who { display: flex; align-items: center; gap: 14px; margin-top: auto; }
+    .avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--brand-gradient); }
+    .who strong { font-size: 1.1rem; }
+    .who span { font-size: 1rem; color: var(--text-muted); }
+    
+    #contact-cta { text-align: center; }
+    #contact-cta h2 { max-width: 25ch; margin: 0 auto 20px; }
 
-    /* Sections */
-    section{margin:36px 0}
-    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-    .card{background:linear-gradient(180deg,#101a2c,#0f192a);border:1px solid var(--line);border-radius:16px;padding:16px}
-
-    /* Social proof */
-    .quotes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-    blockquote{margin:0;background:linear-gradient(180deg,#101a2c,#0f192a);border:1px solid var(--line);border-radius:16px;padding:14px}
-    .who{display:flex;align-items:center;gap:8px;margin-top:8px;color:#cbd5e1}
-    .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(180deg,#334155,#0f172a);border:1px solid var(--line)}
-
-    /* Pricing */
-    .price{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-    .plan{background:linear-gradient(180deg,#101a2c,#0f192a);border:1px solid var(--line);border-radius:16px;padding:16px;position:relative;overflow:hidden}
-    .plan .big{font-size:36px;font-weight:900}
-    .ribbon{position:absolute;inset:auto 12px 12px auto;background:#1f2937;border:1px solid #0b1220;border-radius:999px;padding:6px 10px;color:#fff;font-weight:800}
-
-    /* FAQ */
-    details{background:linear-gradient(180deg,#101a2c,#0f192a);border:1px solid var(--line);border-radius:12px;padding:12px}
-
-    footer{margin:40px 0;color:#9aa7bf;text-align:center}
+    details {
+        background: var(--bg); border: 1px solid var(--border);
+        border-radius: 16px; padding: 24px; cursor: pointer;
+    }
+    summary { font-weight: 700; font-size: 1.25rem; }
+    details p { padding-top: 12px; font-size: 1.1rem; }
+    
+    footer { padding: 60px 0; text-align: center; border-top: 1px solid var(--border); color: var(--text-muted); }
   </style>
 </head>
 <body>
+
   <header>
     <div class="wrap head">
-      <div class="brand">
-        <!-- PE.P logo (SVG) -->
-        <svg class="logo" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-label="PE.P logo">
+      <a href="#" class="brand">
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-label="PE.P logo">
           <defs>
             <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#69c7ff"/>
-              <stop offset="50%" stop-color="#8fa3ff"/>
-              <stop offset="100%" stop-color="#5be2b2"/>
+              <stop offset="0%" stop-color="#3b82f6"/>
+              <stop offset="100%" stop-color="#6366f1"/>
             </linearGradient>
           </defs>
           <rect rx="24" ry="24" width="120" height="120" fill="url(#g)"/>
-          <text x="20" y="72" font-size="48" font-weight="900" fill="#0b1220">PE</text>
-          <circle cx="96" cy="64" r="8" fill="#0b1220"/>
+          <text x="20" y="72" font-size="48" font-weight="900" fill="#ffffff">PE</text>
+          <circle cx="96" cy="64" r="8" fill="#ffffff"/>
         </svg>
         <strong>PE.P</strong>
-      </div>
-      <nav>
-        <a href="#features">יתרונות</a>
-        <a href="#social">המלצות</a>
-        <a href="#pricing">מחיר</a>
-        <a href="#faq">שאלות</a>
-      </nav>
-      <div>
-        <a href="/auth" class="btn">כניסה</a>
-        <a href="/auth" class="btn primary">התחל עכשיו</a>
-      </div>
+      </a>
+      <a href="https://wa.me/972526832628?text=היי,%20אשמח%20לקבל%20פרטים%20נוספים%20על%20מערכת%20PE.P" target="_blank" class="btn primary">יצירת קשר בוואטסאפ</a>
     </div>
   </header>
 
-  <main class="wrap">
+  <main>
     <section class="hero">
-      <div>
-        <h1>בונים שיעור שנראה <span class="grad">מקצועי</span> ומוכן לכיתה</h1>
-        <p class="lead">PE.P חוסך לכם זמן ומרים את הרמה: מערך מסודר, בנק תרגילים עם תמונות, ו‑PDF ממותג עם שם המורה — מתאים למורים בודדים, צוותים ובתי ספר.</p>
-        <div class="bullets">
-          <div class="bullet"><div class="tick">✓</div><div>חלוקה ברורה: חימום • עיקרי • סיום</div></div>
-          <div class="bullet"><div class="tick">✓</div><div>תמונות וטיפים לכל תרגיל</div></div>
-          <div class="bullet"><div class="tick">✓</div><div>ייצוא PDF שנראה כמו חוברת</div></div>
-          <div class="bullet"><div class="tick">✓</div><div>שם המורה על המסמך — מוכן לשיתוף</div></div>
-        </div>
-        <div style="display:flex;gap:10px;margin-top:8px">
-          <a href="/auth" class="btn primary">התחל לבנות מערך</a>
-          <a href="#features" class="btn">ראה איך זה עובד</a>
-        </div>
-        <div style="margin-top:10px;color:#cbd5e1;font-weight:700">נסו חודש ראשון — אם לא עוזר לכם, לא שילמתם.</div>
-      </div>
-      <div class="demo">
-        <div class="demo-inner">
-          <div class="demotop">
-            <span class="chip">מסמך מערך</span>
-            <span class="chip">חימום</span>
-            <span class="chip">עיקרי</span>
-            <span class="chip">סיום</span>
-          </div>
-          <div class="demoarea">
-            <div class="democard"><h4>כותרת המערך</h4><p>נושא • משך • ציוד</p></div>
-            <div class="democard"><h4>חימום</h4><p>3–4 תרגילים קצרים</p></div>
-            <div class="democard"><h4>עיקרי</h4><p>תרגול ממוקד לפי הנושא</p></div>
-            <div class="democard"><h4>סיום</h4><p>משחק קצר / מתיחה</p></div>
-            <div class="democard"><h4>PDF ממותג</h4><p>עם שם המורה</p></div>
-            <div class="democard"><h4>הערות המורה</h4><p>דגשים והתאמות</p></div>
-          </div>
+      <div class="wrap">
+        <h1>הדרך <span class="grad">המהירה והמרשימה</span> ביותר לבנות מערך שיעור</h1>
+        <p class="lead">תפסיקו לבזבז זמן על עיצוב מסמכים. התחילו ליצור מערכים ש<strong>באמת עובדים</strong>, נראים <strong>מקצועי</strong>, וחוסכים לכם <strong>שעות יקרות</strong>.</p>
+        <a href="https://wa.me/972526832628?text=היי,%20אשמח%20לקבל%20פרטים%20נוספים%20על%20מערכת%20PE.P" target="_blank" class="btn primary">אני רוצה לשמוע עוד</a>
+
+        <div class="hero-visual">
+            <div class="device-frame">
+                <div class="lesson-section">חימום</div>
+                <div class="lesson-section">עיקרי</div>
+                <div class="lesson-section">סיום</div>
+            </div>
+            <div class="exercise-bubble" style="--x-start: -280px; --y-start: -120px;"></div>
+            <div class="exercise-bubble" style="--x-start: 250px; --y-start: 150px;"></div>
+            <div class="exercise-bubble" style="--x-start: -300px; --y-start: 100px;"></div>
+            <div class="exercise-bubble" style="--x-start: 320px; --y-start: -80px;"></div>
+            <div class="exercise-bubble" style="--x-start: -180px; --y-start: 160px;"></div>
+            <div class="exercise-bubble" style="--x-start: 200px; --y-start: -160px;"></div>
         </div>
       </div>
     </section>
+    
+    <section id="how-it-works">
+        <div class="wrap">
+            <div class="section-header">
+                <h2>מוכנים לשיעור ב<strong>פחות מ-10 דקות</strong></h2>
+                <p>המערכת כל כך פשוטה, שהיא תהפוך לחלק בלתי נפרד מארגז הכלים המקצועי שלכם.</p>
+            </div>
+            <div class="grid3">
+                <div class="step">
+                    <h3><span class="grad">1. בוחרים תרגילים</span></h3>
+                    <p>מתוך מאגר עשיר ומסודר, עם תמונות ודגשים מקצועיים לכל תרגיל.</p>
+                </div>
+                <div class="step">
+                    <h3><span class="grad">2. מוסיפים בלחיצה</span></h3>
+                    <p>במקום לגרור או להסתבך, פשוט מוסיפים כל תרגיל לחלק המתאים בשיעור.</p>
+                </div>
+                <div class="step">
+                    <h3><span class="grad">3. מייצאים ל-PDF</span></h3>
+                    <p>קבלו קובץ מקצועי וממותג עם שמכם, מוכן לשיתוף, הדפסה, או שליחה.</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <section id="features">
-      <h2>למה מורים בוחרים ב‑PE.P</h2>
-      <div class="grid3">
-        <div class="card"><strong>מקצועי — בלי מאמץ</strong><p style="color:#a5b1c7">מסמך שנראה מצוין בשיתוף הורים/הנהלה, כולל שם המורה וסיכום ציוד אוטומטי.</p></div>
-        <div class="card"><strong>חוסך זמן</strong><p style="color:#a5b1c7">בוחרים תרגילים מוכנים, גוררים, מייצאים. פחות הקלדה – יותר הוראה.</p></div>
-        <div class="card"><strong>מותאם לבית ספר</strong><p style="color:#a5b1c7">משתמשי אדמין, ניהול תרגילים ומקצועות, תמחור לצוותים ובתי ספר.</p></div>
+      <div class="wrap">
+        <div class="section-header">
+          <h2>כל מה שמורה צריך, <strong>במקום אחד</strong></h2>
+          <p>כל פרט במערכת נועד להפוך את החיים שלכם לקלים יותר ואת השיעורים שלכם לטובים יותר.</p>
+        </div>
+        <div class="grid3">
+          <div class="feature-card">
+            <div class="feature-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg></div>
+            <h3>חיסכון אדיר בזמן</h3>
+            <p>בנו מערך שיעור מלא, מא' ועד ת', בפחות זמן מההפסקה בין השיעורים.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg></div>
+            <h3>נראות מקצועית מרשימה</h3>
+            <p>הציגו להנהלה, להורים ולעמיתים מערכים שנראים כמו חוברת מקצועית, עם <strong>שמכם וסיכום ציוד אוטומטי.</strong></p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" /></svg></div>
+            <h3>סדר וארגון במקום אחד</h3>
+            <p>כל המערכים והתרגילים שלכם שמורים ומאורגנים. תוכלו לחזור למערכים ישנים, <strong>לשכפל ולערוך אותם בקלות.</strong></p>
+          </div>
+        </div>
       </div>
     </section>
 
     <section id="social">
-      <h2>מה אומרים מורים</h2>
-      <div class="quotes">
-        <blockquote>“בשליש הזמן אני מוכן לשיעור — וה‑PDF נראה כמו חוברת רשמית.”<div class="who"><div class="avatar"></div><div>רותם, מורה לחינוך גופני</div></div></blockquote>
-        <blockquote>“כשהשם שלי על המסמך, זה גם יפה וגם שומר על קרדיט. אהבתי את הסיכום ציוד.”<div class="who"><div class="avatar"></div><div>אורי, מחנך כיתות ו׳</div></div></blockquote>
-        <blockquote>“סוף־סוף כלי שמדבר מורים. פשוט, ברור, נראה פרימיום.”<div class="who"><div class="avatar"></div><div>מאיה, רכזת מקצוע</div></div></blockquote>
+      <div class="wrap">
+        <div class="section-header">
+          <h2>מורים ממליצים, וזו הגאווה הכי גדולה שלנו</h2>
+        </div>
+        <div class="grid3">
+          <div class="quote-card">
+            <p>“בשליש מהזמן אני מכין שיעור שנראה <strong>פי 10 יותר טוב</strong>. ה-PDF הממותג זה גאוני, זה נותן תחושה של רצינות ושומר על הקרדיט.”</p>
+            <div class="who">
+              <div class="avatar"></div>
+              <div><strong>רותם כהן</strong><span>מורה לחינוך גופני</span></div>
+            </div>
+          </div>
+          <div class="quote-card">
+            <p>“בהתחלה חששתי שזה יהיה עוד כלי מסובך, אבל זה <strong>כל כך אינטואיטיבי</strong>. סוף סוף טכנולוגיה שמדברת בשפה של מורים.”</p>
+            <div class="who">
+              <div class="avatar"></div>
+              <div><strong>מאיה לוי</strong><span>רכזת מקצוע, בי"ס יסודי</span></div>
+            </div>
+          </div>
+          <div class="quote-card">
+            <p>“היכולת לנהל את מאגר התרגילים של כל הצוות במקום אחד <strong>שינתה לנו את החיים</strong>. זה מייעל את העבודה ויוצר שפה אחידה.”</p>
+            <div class="who">
+              <div class="avatar"></div>
+              <div><strong>אורי שקד</strong><span>רכז חינוך גופני</span></div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section id="pricing">
-      <h2>תמחור הוגן ופשוט</h2>
-      <div class="price">
-        <div class="plan"><div class="ribbon">התחלה קלה</div><h3>בודד</h3><div class="big">₪19<span style="font-size:14px">/חודש</span></div><p style="color:#a5b1c7">הכול למורה אחד</p><a href="/auth" class="btn primary">התחל</a></div>
-        <div class="plan"><div class="ribbon" style="background:#0b6;">חסכוני</div><h3>צוות</h3><div class="big">₪49</div><p style="color:#a5b1c7">עד 5 מורים</p><a href="/auth" class="btn primary">בחר</a></div>
-        <div class="plan"><div class="ribbon" style="background:#7c3aed;">בית ספרי</div><h3>בית ספר</h3><div class="big">₪199</div><p style="color:#a5b1c7">ללא הגבלה + מנהל</p><a href="/auth" class="btn primary">דברו איתנו</a></div>
-      </div>
-      <p style="margin-top:8px;color:#cbd5e1">כולל תמיכה בעברית מלאה, ובלי התחייבות. חודש ראשון עלינו.</p>
+    <section id="contact-cta">
+        <div class="wrap">
+            <h2>מוכנים לשדרג את מערכי השיעור שלכם?</h2>
+            <p>דברו איתנו בוואטסאפ וקבלו את כל הפרטים על איך PE.P יכול לשנות את דרך העבודה שלכם, <strong>החל מהשיעור הבא.</strong></p>
+            <a href="https://wa.me/972526832628?text=היי,%20אשמח%20לקבל%20פרטים%20נוספים%20על%20מערכת%20PE.P" target="_blank" class="btn primary">דברו איתנו עכשיו</a>
+        </div>
     </section>
 
     <section id="faq">
-      <h2>שאלות נפוצות</h2>
-      <div class="grid3">
-        <details open><summary><strong>איך מוסיפים תרגילים?</strong></summary><p style="color:#a5b1c7">בוחרים מקצוע, צופים בתרגיל ולוחצים “הוסף” לחימום/עיקרי/סיום. הכל נשמר כטיוטה עד הייצוא.</p></details>
-        <details><summary><strong>איך עובד ה‑PDF הממותג?</strong></summary><p style="color:#a5b1c7">שם המורה נלקח אוטומטית מהחשבון ומופיע כסימן מים עדין במסמך.</p></details>
-        <details><summary><strong>אפשר לעבוד כצוות?</strong></summary><p style="color:#a5b1c7">כן. מנהל יכול להוסיף מורים, לנהל תרגילים ומקצועות, ולתמחר בתוכנית צוות/בית ספר.</p></details>
+      <div class="wrap">
+        <div class="section-header">
+          <h2>שאלות אחרונות (ותשובות מהירות)</h2>
+        </div>
+        <div class="faq-grid">
+          <details>
+            <summary>איך עובד ה-PDF הממותג?</summary>
+            <p>שם המורה נלקח אוטומטית מהחשבון ומופיע בצורה אלגנטית על המסמך הסופי. זה מבטיח שהקרדיט תמיד נשמר ונראה מקצועי לחלוטין בכל שיתוף.</p>
+          </details>
+          <details>
+            <summary>האם המערכת מתאימה גם למקצועות שאינם חינוך גופני?</summary>
+            <p>כן. למרות שהמערכת התחילה מעולם החינוך הגופני, המבנה של חימום/עיקרי/סיום גמיש ומתאים למגוון רחב של מקצועות ותחומי דעת.</p>
+          </details>
+          <details>
+            <summary>האם אפשר לעבוד כצוות?</summary>
+            <p>בהחלט. המערכת תומכת בניהול צוותי מורים. מנהל המערכת בבית הספר יכול להוסיף מורים, לנהל את מאגר התרגילים המוסדי ועוד.</p>
+          </details>
+        </div>
       </div>
     </section>
   </main>
 
-  <footer>© PE.P — נבנה יחד עם אנשי חינוך • <a href="/auth">התחברות</a></footer>
+  <footer>
+    <div class="wrap">
+      © PE.P — נבנה באהבה למקצוע ההוראה.
+    </div>
+  </footer>
+
 </body>
 </html>

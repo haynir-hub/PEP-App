@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <title>אזור ניהול – תרגילי PEP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+
+  <!-- סגנונות מקומיים קלים לרשת התרגילים + מודל פרטים + תיאור גדול -->
+  <style>
+    /* תיבת תיאור גדולה ונוחה יותר */
+    #description{
+      min-height: 220px;      /* גדול יותר */
+      line-height: 1.6;
+    }
+
+    /* רשת התרגילים בתחתית */
+    .drills-grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
+      gap:14px;
+    }
+    .drill-tile{
+      background:#fff;
+      border:1px solid var(--glass-border);
+      border-radius:16px;
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      min-height:280px;
+      transition:box-shadow .15s;
+      box-shadow:var(--shadow-sm);
+    }
+    .drill-tile:hover{ box-shadow:var(--shadow-md); }
+    .drill-thumb{
+      width:100%;
+      aspect-ratio:4/3;
+      object-fit:cover;
+      border-radius:12px;
+      border:1px solid var(--glass-border);
+      background:#f3f4f6;
+    }
+    .drill-name{ font-size:15px; font-weight:900; margin:2px 0 0; line-height:1.25; }
+    .drill-chip{
+      background:#eef2ff;
+      color:#1d4ed8;
+      border:1px solid #c7d2fe;
+      padding:4px 10px;
+      border-radius:999px;
+      font-size:12px;
+      display:inline-block;
+    }
+    .drill-actions{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:8px;
+      margin-top:auto;
+    }
+    .btn-danger{ background:linear-gradient(135deg,#fda4a4,#ef6b6b); color:#fff; border:0; }
+    .btn-danger:hover{ filter:brightness(1.05); }
+
+    /* Modal (כרטיסייה צפה) */
+    #modalBackdrop{
+      display:none;
+      position:fixed; inset:0;
+      background:rgba(15,23,42,.28);
+      backdrop-filter:blur(2px);
+      align-items:center; justify-content:center;
+      padding:18px; z-index:60;
+    }
+    #modalBackdrop .modal{
+      width:min(820px,96vw); max-height:88vh; overflow:auto;
+      background:#fff; border:1px solid var(--glass-border);
+      border-radius:16px; padding:14px;
+      box-shadow:0 20px 60px rgba(2,6,23,.25);
+    }
+    #modalBackdrop .modal header{
+      position:sticky; top:-14px; background:#fff;
+      border-bottom:1px solid var(--glass-border);
+      border-radius:14px 14px 0 0;
+    }
+    #modalBackdrop .modal h3{ margin:0; font-size:18px; }
+    #modalBackdrop .content{ padding:12px; }
+    #modalBackdrop .hero{
+      width:100%; max-height:360px; object-fit:cover;
+      border-radius:12px; border:1px solid var(--glass-border);
+    }
+    #modalBackdrop .meta-line{ color:#475569; margin:10px 0; }
+    #modalBackdrop ul{ margin:0; padding:0 18px; list-style:disc; }
+  </style>
+</head>
+<body class="pep-skin">
+  <div class="appbar">
+    <div class="appbar__inner container">
+      <div class="brand">
+        <div class="brand__logo">
+          <img class="brand__img" src="/assets/pep-logo.png" alt="PEP Logo" />
+        </div>
+        <div class="brand__title">ניהול תרגילי PEP</div>
+      </div>
+      <div><a class="btn secondary btn-sm" href="/admin">חזור לאזור ניהול</a></div>
+    </div>
+  </div>
+
+  <main class="container" style="margin-top:20px;">
+    <div class="grid-2">
+      <section class="section">
+        <div class="h3">הוספת/עריכת תרגיל</div>
+        <div class="mt-12" style="display:grid; gap:10px;">
+          <input id="name" class="input" placeholder="שם התרגיל" />
+          <select id="subject" class="input"></select>
+          <input id="category" class="input" placeholder="קטגוריה (לדוגמה: כוח/קואורדינציה)" />
+
+          <select id="type" class="input">
+            <option value="warmup">תרגיל חימום</option>
+            <option value="main" selected>תרגיל עיקרי</option>
+            <option value="finish">משחקון סיכום</option>
+          </select>
+
+          <textarea id="description" class="input" placeholder="תיאור התרגיל (כל שורה = נקודה)"></textarea>
+          <div class="desc-preview">
+            <div class="muted" style="font-size:12px;">תצוגה מקדימה בנקודות:</div>
+            <ul id="descPreview" class="desc-list"></ul>
+          </div>
+
+          <textarea id="equipment" class="input" placeholder="ציוד נדרש (מופרד בפסיקים)"></textarea>
+          <input id="age_group" class="input" placeholder="קבוצת גיל (לא חובה)" />
+          <input id="image" type="file" class="input" accept="image/*" />
+        </div>
+        <div class="mt-16" style="display:flex; gap:8px; justify-content:flex-end;">
+          <button id="save" class="btn btn-sm">שמור</button>
+          <button id="reset" class="btn secondary btn-sm">נקה</button>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="h3">כל התרגילים</div>
+        <div class="mt-12">
+          <!-- פה תופיע רשת התרגילים -->
+          <div id="list" class="drills-grid"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Modal לפרטים -->
+  <div id="modalBackdrop" role="dialog" aria-modal="true">
+    <div class="modal">
+      <header>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;">
+          <h3 id="modalTitle"></h3>
+          <button class="btn" id="modalClose">סגור</button>
+        </div>
+      </header>
+      <div class="content">
+        <img id="modalImage" class="hero" alt="" />
+        <div class="meta-line" id="modalMeta"></div>
+        <ul id="modalBullets"></ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function updatePreview(){
+      const raw=(document.getElementById('description').value||'').replace(/\r/g,'');
+      const lines=raw.split('\n').map(s=>s.trim()).filter(Boolean);
+      const el=document.getElementById('descPreview');
+      if(!lines.length){ el.innerHTML=''; return; }
+      el.innerHTML = lines.map(s=>`<li>${s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}</li>`).join('');
+    }
+    document.addEventListener('input',e=>{ if(e.target && e.target.id==='description') updatePreview(); });
+
+    function typeToHe(t){ return t==='warmup'?'חימום':(t==='finish'?'סיום':'עיקרי'); }
+    function badgeClass(t){ return t==='warmup'?'badge pep-warmup':(t==='finish'?'badge pep-finish':'badge pep-main'); }
+  </script>
+
+  <script>
+    let editingId=null;
+    const els={
+      name:document.getElementById('name'),
+      subject:document.getElementById('subject'),
+      category:document.getElementById('category'),
+      type:document.getElementById('type'),
+      description:document.getElementById('description'),
+      equipment:document.getElementById('equipment'),
+      age:document.getElementById('age_group'),
+      img:document.getElementById('image'),
+      list:document.getElementById('list'),
+      save:document.getElementById('save'),
+      reset:document.getElementById('reset'),
+    };
+
+    // Modal אלמנטים
+    const modal = document.getElementById('modalBackdrop');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalImage = document.getElementById('modalImage');
+    const modalMeta  = document.getElementById('modalMeta');
+    const modalBullets = document.getElementById('modalBullets');
+    document.getElementById('modalClose').onclick = () => modal.style.display = 'none';
+    modal.addEventListener('click',(e)=>{ if(e.target===modal) modal.style.display='none'; });
+
+    const toBullets = txt => String(txt||'').replace(/\r/g,'').split('\n').map(s=>s.trim()).filter(Boolean);
+
+    async function loadSubjects(){
+      const r=await fetch('/api/subjects'); const d=await r.json();
+      els.subject.innerHTML=d.subjects.map(s=>`<option value="${s.name}">${s.name}</option>`).join('');
+    }
+
+    async function load(){
+      const r=await fetch('/api/exercises'); const d=await r.json();
+      renderGrid(d.exercises||[]);
+    }
+
+    function renderGrid(exercises){
+      els.list.innerHTML='';
+      exercises.forEach(x=>{
+        const tile=document.createElement('div'); tile.className='drill-tile';
+
+        const img=document.createElement('img'); img.className='drill-thumb';
+        img.src = x.image_url ? x.image_url : '/assets/pep-logo.png'; img.alt='';
+
+        const name=document.createElement('div'); name.className='drill-name'; name.textContent=x.name||'';
+
+        const chip=document.createElement('span'); chip.className='drill-chip'; chip.textContent=typeToHe(x.type||'main');
+
+        const actions=document.createElement('div'); actions.className='drill-actions';
+
+        const btnEdit=document.createElement('button'); btnEdit.className='btn'; btnEdit.textContent='ערוך';
+        btnEdit.onclick=()=>fillForm(x);
+
+        const btnDelete=document.createElement('button'); btnDelete.className='btn btn-danger'; btnDelete.textContent='מחק';
+        btnDelete.onclick=async()=>{ if(!confirm('למחוק?'))return; const r=await fetch('/api/exercises/'+x.id,{method:'DELETE'}); if(r.ok) load(); };
+
+        const btnDetails=document.createElement('button'); btnDetails.className='btn primary'; btnDetails.textContent='פרטים';
+        btnDetails.onclick=()=>openDetails(x);
+
+        actions.append(btnEdit, btnDelete, btnDetails);
+
+        tile.append(img, name, chip, actions);
+        els.list.appendChild(tile);
+      });
+    }
+
+    function openDetails(ex){
+      modalTitle.textContent = ex.name || '';
+      modalImage.style.display = (ex.image_url || '').length ? 'block' : 'none';
+      modalImage.src = ex.image_url || '';
+      const metaParts = [
+        `סוג: ${typeToHe(ex.type||'main')}`,
+        `נושא: ${ex.subject||'-'}`,
+        `קטגוריה: ${ex.category||'-'}`,
+        `ציוד: ${ex.equipment||'-'}`,
+        ex.age_group ? `קבוצת גיל: ${ex.age_group}` : null
+      ].filter(Boolean);
+      modalMeta.textContent = metaParts.join(' · ');
+      modalBullets.innerHTML = '';
+      toBullets(ex.description).forEach(line => {
+        const li=document.createElement('li'); li.textContent=line; modalBullets.appendChild(li);
+      });
+      modal.style.display='flex';
+    }
+
+    function fillForm(x){
+      editingId=x.id;
+      els.name.value=x.name||'';
+      els.subject.value=x.subject||'';
+      els.category.value=x.category||'';
+      els.type.value=x.type||'main';
+      els.description.value=x.description||'';
+      els.equipment.value=x.equipment||'';
+      els.age.value=x.age_group||'';
+      els.img.value=''; updatePreview();
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+
+    function clearForm(){
+      editingId=null;
+      els.name.value=els.category.value=els.description.value=els.equipment.value=els.age.value='';
+      els.type.value='main'; els.img.value=''; updatePreview();
+    }
+    els.reset.onclick=()=>clearForm();
+
+    els.save.onclick=async ()=>{
+      const fd=new FormData();
+      fd.append('name',els.name.value);
+      fd.append('subject',els.subject.value);
+      fd.append('category',els.category.value);
+      fd.append('type',els.type.value);
+      fd.append('description',els.description.value);
+      fd.append('equipment',els.equipment.value);
+      fd.append('age_group',els.age.value);
+      if(els.img.files[0]) fd.append('image', els.img.files[0]);
+      let r;
+      if(editingId){ r=await fetch('/api/exercises/'+editingId,{method:'PUT',body:fd}); }
+      else{ r=await fetch('/api/exercises',{method:'POST',body:fd}); }
+      if(r.ok){ clearForm(); load(); } else { alert('שגיאה בשמירה'); }
+    };
+
+    loadSubjects().then(()=>{ load(); updatePreview(); });
+  </script>
+</body>
+</html>

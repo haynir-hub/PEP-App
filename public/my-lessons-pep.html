@@ -1,170 +1,56 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
-
 <head>
-    <meta charset="utf-8" />
-    <title>המערכים שלי — PEP</title>
-    <style>
-        :root {
-            --bg: #f4f7fb;
-            --ink: #0b1324;
-            --muted: #64748b;
-            --line: #e2e8f0;
-            --brand: #111827;
-            --card: #fff
-        }
-
-        body {
-            margin: 0;
-            background: var(--bg);
-            font-family: system-ui, sans-serif;
-            color: var(--ink)
-        }
-
-        header {
-            position: sticky;
-            top: 0;
-            background: #ffffffe6;
-            backdrop-filter: blur(8px);
-            border-bottom: 1px solid var(--line);
-            padding: 12px 16px;
-            display: flex;
-            gap: 10px;
-            align-items: center
-        }
-
-        .wrap {
-            max-width: 960px;
-            margin: 16px auto;
-            padding: 0 14px
-        }
-
-        .plan-card {
-            background: var(--card);
-            border: 1px solid var(--line);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        button {
-            padding: 8px 12px;
-            border-radius: 8px;
-            border: 1px solid var(--line);
-            background: #fff;
-            cursor: pointer;
-        }
-
-        button.primary {
-            background: var(--brand);
-            color: #fff;
-            border: 0;
-        }
-
-        a {
-            text-decoration: none;
-        }
-    </style>
+  <meta charset="utf-8" />
+  <title>PEP – המערכים שלי</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
 </head>
-
-<body>
-    <header>
-        <strong>המערכים שלי (PEP)</strong>
-        <a href="/lesson-builder"><button>+ צור מערך חדש</button></a>
-        <div style="margin-inline-start:auto"></div>
-        <a id="return-to-admin" href="/api/auth/return-to-admin"
-            style="display:none; background-color: #ffc107; color: black; padding: 8px 12px; border-radius: 8px; font-weight: bold;">חזרה
-            לניהול</a>
-        <div id="teacherBox" class="muted" style="margin:0 10px;">מורה: —</div>
-    </header>
-    <div class="wrap">
-        <div id="lesson-list"></div>
+<body class="pep-skin">
+  <div class="appbar">
+    <div class="appbar__inner container">
+      <div class="brand">
+        <div class="brand__logo"><img class="brand__img" src="/assets/pep-logo.png" alt="PEP Logo" /></div>
+        <div class="brand__title">PEP – המערכים שלי</div>
+      </div>
+      <div class="flex items-center gap-8">
+        <a class="btn secondary btn-sm" href="/lesson-builder">חזור לבונה המערכים</a>
+        <a class="btn secondary btn-sm" href="/admin">אזור ניהול</a>
+      </div>
     </div>
-    <script>
-        const $ = (id) => document.getElementById(id);
-        
-        async function jsonFetch(url, options = {}) {
-            const r = await fetch(url, {
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                ...options
-            });
-            const d = await r.json().catch(() => ({}));
-            if (!r.ok) throw new Error(d.error || 'Request failed');
-            return d;
-        }
+  </div>
 
-        async function initializePage() {
-            try {
-                const meData = await jsonFetch('/api/auth/me');
-                if (!meData.user) return location.href = '/auth';
-                $('teacherBox').textContent = `מורה: ${meData.user.fullname || meData.user.email}`;
+  <main class="container" style="margin-top:20px;">
+    <section class="section">
+      <div class="h3">הרשימה שלי</div>
+      <div id="list" class="mt-12" style="display:grid; gap:12px;"></div>
+    </section>
+  </main>
 
-                if (meData.user.role === 'admin' && meData.viewAsOrg) {
-                    $('return-to-admin').style.display = 'inline-block';
-                }
-                await renderLessonPlans();
-            } catch (error) {
-                console.error("Error loading page:", error);
-            }
-        }
+  <script>
+    async function load(){
+      const r=await fetch('/api/my-lesson-plans'); const d=await r.json();
+      const list=document.getElementById('list'); list.innerHTML='';
+      (d.lesson_plans||[]).filter(x=>x.organization==='PEP').forEach(lp=>{
+        const card=document.createElement('div'); card.className='card';
+        const title=document.createElement('div'); title.className='h3'; title.textContent=lp.name||'—';
+        const meta=document.createElement('div'); meta.className='muted mt-8'; meta.textContent=`נוצר ב: ${new Date(lp.created_at).toLocaleString('he-IL')}`;
 
-        async function renderLessonPlans() {
-            const listEl = $('lesson-list');
-            try {
-                const {
-                    lesson_plans
-                } = await jsonFetch('/api/my-lesson-plans');
-                const pep_plans = lesson_plans.filter(p => p.organization === 'PEP');
-                if (pep_plans.length === 0) {
-                    listEl.innerHTML = '<p>עדיין לא יצרת מערכי שיעור.</p>';
-                    return;
-                }
-                listEl.innerHTML = '';
-                pep_plans.forEach(plan => {
-                    const card = document.createElement('div');
-                    card.className = 'plan-card';
-                    const date = new Date(plan.created_at).toLocaleDateString('he-IL');
-                    card.innerHTML = `
-                        <div>
-                            <h3 style="margin:0;">${plan.name}</h3>
-                            <p style="margin:4px 0;" class="muted">${plan.topic || ''} • נוצר ב-${date}</p>
-                        </div>
-                        <div>
-                            <a href="/lesson-builder?id=${plan.id}"><button>ערוך</button></a>
-                            <a href="/api/lesson-plans/${plan.id}/pdf" style="margin:0 8px;"><button class="primary">הורד PDF</button></a>
-                            <button class="delete-btn" data-id="${plan.id}" style="color:#dc3545;">מחק</button>
-                        </div>
-                    `;
-                    listEl.appendChild(card);
-                });
-            } catch (e) {
-                listEl.innerHTML = `<p style="color:red">שגיאה בטעינת המערכים.</p>`
-            }
-        }
+        const actions=document.createElement('div'); actions.className='mt-12'; actions.style.display='flex'; actions.style.gap='8px';
+        const pdf=document.createElement('a'); pdf.href=`/api/lesson-plans/${lp.id}/pdf`; pdf.className='btn btn-sm'; pdf.textContent='ייצא ל־PDF';
+        const edit=document.createElement('a'); edit.href=`/lesson-builder?id=${lp.id}`; edit.className='btn secondary btn-sm'; edit.textContent='ערוך';
+        const del=document.createElement('button'); del.className='btn btn-danger-soft btn-xs'; del.textContent='מחק';
+        del.onclick=async()=>{ if(!confirm('למחוק מערך זה?'))return; const r=await fetch('/api/lesson-plans/'+lp.id,{method:'DELETE'}); if(r.ok) load(); };
 
-        $('lesson-list').addEventListener('click', async (e) => {
-            if (e.target.classList.contains('delete-btn')) {
-                const planId = e.target.dataset.id;
-                if (confirm('האם אתה בטוח שברצונך למחוק את המערך?')) {
-                    try {
-                        await jsonFetch(`/api/lesson-plans/${planId}`, {
-                            method: 'DELETE'
-                        });
-                        await renderLessonPlans();
-                    } catch (error) {
-                        alert(`שגיאה במחיקת המערך: ${error.message}`);
-                    }
-                }
-            }
-        });
-
-        initializePage();
-    </script>
+        actions.appendChild(pdf); actions.appendChild(edit); actions.appendChild(del);
+        card.appendChild(title); card.appendChild(meta); card.appendChild(actions);
+        list.appendChild(card);
+      });
+    }
+    load();
+  </script>
 </body>
 </html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>NIKA | כניסה למערכת</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fff7fb;
+      --card: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --accent: #d946ef;
+      --border: #f0def0;
+      --danger: #dc2626;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; height: 100%;
+      font-family: 'Heebo', sans-serif;
+      background-color: var(--bg); color: var(--text);
+    }
+    body { display: grid; place-items: center; padding: 20px; }
+    .login-card {
+      width: 100%; max-width: 420px;
+      background-color: var(--card); border: 1px solid var(--border);
+      border-radius: 24px; padding: 40px;
+      box-shadow: 0 10px 30px -5px rgba(217, 70, 239, 0.08);
+      text-align: center;
+    }
+    .logo-container { margin-bottom: 24px; display: flex; justify-content: center; }
+    .logo { height: 60px; width: auto; }
+    h1 { font-size: 28px; font-weight: 900; margin: 0 0 8px; }
+    .tagline { font-size: 18px; color: var(--text-muted); margin: 0 0 32px; }
+    .form-group { text-align: right; margin-bottom: 20px; }
+    .form-group label { display: block; font-weight: 700; margin-bottom: 8px; font-size: 16px; }
+    .form-group input {
+      width: 100%; padding: 14px 16px; border: 1px solid var(--border);
+      border-radius: 12px; font-size: 16px; font-family: 'Heebo', sans-serif;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-group input:focus {
+      outline: none; border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(217, 70, 239, 0.15);
+    }
+    .login-btn {
+      width: 100%; padding: 16px; border: none; border-radius: 12px;
+      background-color: var(--accent); color: white; font-size: 18px;
+      font-weight: 700; cursor: pointer; transition: filter 0.2s;
+    }
+    .login-btn:hover { filter: brightness(1.1); }
+    .error-message {
+        display: none; /* Hidden by default */
+        color: var(--danger);
+        font-weight: 700;
+        margin-top: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-card">
+    <div class="logo-container">
+      <img src="/assets/nika-logo.png" alt="לוגו NIKA" class="logo">
+    </div>
+    
+    <h1>כניסה למערכת NIKA</h1>
+    <p class="tagline">מערכת חכמה לבניית מערכי משחקים</p>
+    
+    <form id="login-form">
+      <div class="form-group">
+        <label for="email">שם משתמש או אימייל</label>
+        <input type="text" id="email" name="email" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="password">סיסמה</label>
+        <input type="password" id="password" name="password" required>
+      </div>
+      
+      <button type="submit" class="login-btn">התחברות</button>
+      <p id="error-message" class="error-message"></p>
+    </form>
+  </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('login-form');
+  const errorMessageElement = document.getElementById('error-message');
+
+  form.addEventListener('submit', function(event) {
+    event.preventDefault(); // מניעת שליחה רגילה של הטופס
+
+    const email = form.elements.email.value;
+    const password = form.elements.password.value;
+    
+    errorMessageElement.style.display = 'none'; // הסתרת הודעת שגיאה ישנה
+
+    fetch('/api/users/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email: email, password: password }),
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.redirectUrl) {
+        // ההתחברות הצליחה, השרת אומר לאן להפנות
+        window.location.href = data.redirectUrl;
+      } else if (data.error) {
+        // השרת החזיר הודעת שגיאה
+        errorMessageElement.textContent = data.error;
+        errorMessageElement.style.display = 'block';
+      }
+    })
+    .catch(error => {
+      console.error('Login request failed:', error);
+      errorMessageElement.textContent = 'אירעה שגיאה. נסה שוב מאוחר יותר.';
+      errorMessageElement.style.display = 'block';
+    });
+  });
+});
+</script>
+
+</body>
+</html>

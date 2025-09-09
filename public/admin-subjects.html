@@ -1,52 +1,81 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <title>ניהול נושאים</title>
-    <style>
-        body { font-family: system-ui, sans-serif; background-color: #f4f7f9; color: #333; margin: 20px; }
-        .container { max-width: 800px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1, h2 { color: #0056b3; }
-        a { color: #007bff; text-decoration: none; }
-        nav { margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee; display: flex; gap: 20px; align-items: center; }
-        nav a { font-weight: bold; font-size: 18px; }
-        form { display: flex; gap: 10px; margin-bottom: 20px; }
-        input { flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
-        button { padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        ul { list-style-type: none; padding: 0; }
-        li { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
-        .actions button { margin-left: 10px; background-color: #6c757d; font-size: 12px; padding: 5px 10px; }
-        .actions .delete-btn { background-color: #dc3545; }
-    </style>
+  <meta charset="utf-8" />
+  <title>אזור ניהול – נושאי PEP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
 </head>
-<body>
-    <div class="container">
-        <nav>
-            <a href="/admin">תרגילי PEP</a>
-            <a href="/admin-nika-games">משחקי NIKA</a>
-            <div style="margin-inline-start: auto; display: flex; gap: 15px;">
-                <a href="/api/auth/view-as-pep" style="color: #007bff;">צפה כ-PEP</a>
-                <a href="/api/auth/view-as-nika" style="color: #d946ef;">צפה כ-NIKA</a>
-            </div>
-        </nav>
-        <h1>ניהול נושאים</h1>
-        <form id="subject-form">
-            <h2>הוסף נושא חדש</h2>
-            <input type="text" id="subject-name" placeholder="שם הנושא" required>
-            <button type="submit">הוסף</button>
-        </form>
-        <h2>נושאים קיימים</h2>
-        <ul id="subjects-list"></ul>
+<body class="pep-skin">
+  <div class="appbar">
+    <div class="appbar__inner container">
+      <div class="brand">
+        <div class="brand__logo">
+          <img class="brand__img" src="/assets/pep-logo.png" alt="PEP Logo" />
+        </div>
+        <div class="brand__title">ניהול נושאי PEP</div>
+      </div>
+      <div><a class="btn secondary btn-sm" href="/admin">חזור לאזור ניהול</a></div>
     </div>
-    <script>
-        const subjectForm = document.getElementById('subject-form');
-        const subjectNameInput = document.getElementById('subject-name');
-        const subjectsList = document.getElementById('subjects-list');
-        async function jsonFetch(url, options = {}) { const defaultOptions = { credentials: 'include', headers: { 'Content-Type': 'application/json' } }; const response = await fetch(url, { ...defaultOptions, ...options }); const data = await response.json().catch(() => ({})); if (!response.ok) { throw new Error(data.error || 'Request Failed'); } return data; }
-        async function renderSubjects() { try { const { subjects } = await jsonFetch('/api/subjects'); subjectsList.innerHTML = ''; subjects.forEach(subject => { const li = document.createElement('li'); li.innerHTML = `<span>${subject.name}</span><div class="actions"><button class="edit-btn" data-id="${subject.id}" data-name="${subject.name}">ערוך</button><button class="delete-btn" data-id="${subject.id}">מחק</button></div>`; subjectsList.appendChild(li); }); } catch(e) { console.error(e) } }
-        subjectForm.addEventListener('submit', async e => { e.preventDefault(); const name = subjectNameInput.value.trim(); if (!name) return; try { await jsonFetch('/api/subjects', { method: 'POST', body: JSON.stringify({ name }) }); subjectNameInput.value = ''; renderSubjects(); } catch(e) { alert(`שגיאה: ${e.message}`) } });
-        subjectsList.addEventListener('click', async e => { const id = e.target.dataset.id; if (e.target.classList.contains('delete-btn')) { if (confirm('האם אתה בטוח?')) { try { await jsonFetch(`/api/subjects/${id}`, { method: 'DELETE' }); renderSubjects(); } catch(e) { alert(`שגיאה: ${e.message}`) } } } if (e.target.classList.contains('edit-btn')) { const currentName = e.target.dataset.name; const newName = prompt('הזן שם חדש:', currentName); if (newName && newName.trim()) { try { await jsonFetch(`/api/subjects/${id}`, { method: 'PUT', body: JSON.stringify({ name: newName.trim() }) }); renderSubjects(); } catch(e) { alert(`שגיאה: ${e.message}`) } } } });
-        renderSubjects();
-    </script>
+  </div>
+
+  <main class="container" style="margin-top:20px;">
+    <div class="grid-2">
+      <section class="section">
+        <div class="h3">הוסף נושא</div>
+        <div class="mt-12" style="display:flex; gap:8px;">
+          <input id="subjectName" class="input" placeholder="שם הנושא" />
+          <button id="add" class="btn btn-sm">הוסף</button>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="h3">כל הנושאים</div>
+        <div id="list" class="mt-12" style="display:grid; gap:10px;"></div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const els={ name:document.getElementById('subjectName'), add:document.getElementById('add'), list:document.getElementById('list') };
+
+    function row(s){
+      const card=document.createElement('div'); card.className='card'; card.style.display='flex'; card.style.justifyContent='space-between'; card.style.alignItems='center';
+      const t=document.createElement('div'); t.className='h3'; t.textContent=s.name;
+      const actions=document.createElement('div'); actions.style.display='flex'; actions.style.gap='6px';
+      const edit=document.createElement('button'); edit.className='btn secondary btn-xs'; edit.textContent='ערוך';
+      const del=document.createElement('button'); del.className='btn btn-xs btn-outline'; del.textContent='מחק';
+      edit.onclick=async()=>{
+        const newName=prompt('שם חדש לנושא:', s.name);
+        if(!newName || !newName.trim()) return;
+        const r=await fetch('/api/subjects/'+s.id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:newName.trim()})});
+        if(r.ok) load();
+      };
+      del.onclick=async()=>{
+        if(!confirm('למחוק נושא זה?')) return;
+        const r=await fetch('/api/subjects/'+s.id,{method:'DELETE'});
+        if(r.ok) load();
+      };
+      actions.appendChild(edit); actions.appendChild(del);
+      card.appendChild(t); card.appendChild(actions);
+      return card;
+    }
+
+    async function load(){
+      const r=await fetch('/api/subjects'); const d=await r.json();
+      els.list.innerHTML=''; (d.subjects||[]).forEach(s=>els.list.appendChild(row(s)));
+    }
+
+    els.add.onclick=async()=>{
+      const name=(els.name.value||'').trim(); if(!name) return alert('יש להזין שם נושא');
+      const r=await fetch('/api/subjects',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name})});
+      if(r.ok){ els.name.value=''; load(); } else { alert('שגיאה בהוספה'); }
+    };
+
+    load();
+  </script>
 </body>
 </html>
