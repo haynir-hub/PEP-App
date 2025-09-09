@@ -12,12 +12,14 @@
     "node": "18.x"
   },
   "dependencies": {
+    "@sparticuz/chromium": "^138.0.2",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
     "express": "^4.21.2",
     "express-session": "^1.17.3",
     "multer": "^1.4.5-lts.2",
     "puppeteer": "^22.15.0",
+    "puppeteer-core": "^24.19.0",
     "sqlite3": "^5.1.6"
   }
 }

@@ -30,7 +30,13 @@
       text-align: center;
     }
     .logo-container { margin-bottom: 24px; display: flex; justify-content: center; }
-    .logo { height: 60px; width: auto; }
+    
+    /* === הלוגו הוגדל פי 4 === */
+    .logo { 
+        height: 240px; 
+        width: auto;
+    }
+
     h1 { font-size: 28px; font-weight: 900; margin: 0 0 8px; }
     .tagline { font-size: 18px; color: var(--text-muted); margin: 0 0 32px; }
     .form-group { text-align: right; margin-bottom: 20px; }
@@ -90,12 +96,12 @@ document.addEventListener('DOMContentLoaded', function() {
   const errorMessageElement = document.getElementById('error-message');
 
   form.addEventListener('submit', function(event) {
-    event.preventDefault(); // מניעת שליחה רגילה של הטופס
+    event.preventDefault(); 
 
     const email = form.elements.email.value;
     const password = form.elements.password.value;
     
-    errorMessageElement.style.display = 'none'; // הסתרת הודעת שגיאה ישנה
+    errorMessageElement.style.display = 'none';
 
     fetch('/api/users/login', {
       method: 'POST',
@@ -107,10 +113,8 @@ document.addEventListener('DOMContentLoaded', function() {
     .then(response => response.json())
     .then(data => {
       if (data.redirectUrl) {
-        // ההתחברות הצליחה, השרת אומר לאן להפנות
         window.location.href = data.redirectUrl;
       } else if (data.error) {
-        // השרת החזיר הודעת שגיאה
         errorMessageElement.textContent = data.error;
         errorMessageElement.style.display = 'block';
       }
