@@ -29,7 +29,7 @@
     #lessons-list { display: grid; gap: 16px; }
     .lesson-row {
         display: grid;
-        grid-template-columns: 1fr auto auto;
+        grid-template-columns: 1fr auto;
         gap: 16px;
         align-items: center;
         background: var(--card);
@@ -49,11 +49,14 @@
         font-weight: 700;
         font-size: 14px;
         white-space: nowrap;
-        transition: background-color 0.2s;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.2s, opacity 0.2s;
     }
-    .btn-pdf[disabled] {
+    .btn-pdf:disabled {
         background: #d4d4d8;
         cursor: not-allowed;
+        opacity: 0.7;
     }
     footer { text-align: center; padding: 24px; margin-top: 32px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--border); }
   </style>
@@ -114,20 +117,12 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
 
-    // === לוגיקה מעודכנת לטעינת המערכים השמורים ===
+    // === לוגיקה חדשה לטעינת המערכים השמורים ===
     const lessonsListElement = document.getElementById('lessons-list');
     fetch('/api/my-lesson-plans')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Could not fetch lesson plans');
-            }
-            return response.json();
-        })
+        .then(response => response.ok ? response.json() : Promise.reject('Could not fetch lesson plans'))
         .then(data => {
-            console.log('Data received from server:', data); // הדפסה לאבחון
-
             const nikaPlans = data.lesson_plans.filter(plan => plan.organization === 'NIKA');
-            
             if (nikaPlans.length === 0) {
                 lessonsListElement.innerHTML = '<p style="text-align:center;">עדיין לא שמרת מערכים.</p>';
                 return;
@@ -140,20 +135,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 const planElement = document.createElement('div');
                 planElement.className = 'lesson-row';
                 
-                let buttonHtml;
-                // בדיקת בטיחות - ודא שה-ID קיים
-                if (plan.id) {
-                    buttonHtml = `<a href="/api/lesson-plans/${plan.id}/pdf" class="btn-pdf">הורד PDF</a>`;
-                } else {
-                    buttonHtml = `<button class="btn-pdf" disabled>PDF לא זמין</button>`;
-                }
+                const planName = escapeHTML(plan.name) || 'מערך ללא שם';
 
                 planElement.innerHTML = `
                     <div class="lesson-info">
-                        <h3>${escapeHTML(plan.name)}</h3>
+                        <h3>${planName}</h3>
                         <p>נוצר בתאריך: ${formattedDate}</p>
                     </div>
-                    ${buttonHtml}
+                    <button class="btn-pdf download-btn" data-plan-id="${plan.id}" data-plan-name="${planName}">הורד PDF</button>
                 `;
                 lessonsListElement.appendChild(planElement);
             });
@@ -162,18 +151,68 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error fetching lesson plans:', error);
             lessonsListElement.innerHTML = '<p style="text-align:center; color: red;">אירעה שגיאה בטעינת המערכים.</p>';
         });
+
+    // ================================================================= //
+    // --->              לוגיקת הורדת PDF חדשה              <---
+    // ================================================================= //
+    lessonsListElement.addEventListener('click', function(event) {
+        if (!event.target.classList.contains('download-btn')) {
+            return; // אם לא לחצו על כפתור הורדה, התעלם
+        }
+
+        const button = event.target;
+        const planId = button.dataset.planId;
+        const planName = button.dataset.planName;
+        const originalText = button.textContent;
+
+        if (!planId) {
+            alert('שגיאה: מזהה המערך חסר.');
+            return;
+        }
+
+        // עדכון הכפתור כדי להראות למשתמש שמתבצעת פעולה
+        button.textContent = 'מוריד...';
+        button.disabled = true;
+
+        fetch(`/api/lesson-plans/${planId}/pdf`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`שגיאת שרת: ${response.statusText}`);
+                }
+                return response.blob(); // קבלת התוכן כקובץ בינארי (blob)
+            })
+            .then(blob => {
+                // יצירת קישור זמני בזיכרון של הדפדפן
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                // קביעת שם הקובץ להורדה
+                a.download = `${planName}.pdf`;
+                document.body.appendChild(a);
+                a.click(); // הפעלת ההורדה על ידי "לחיצה" על הקישור הנסתר
+                
+                // ניקוי
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                // החזרת הכפתור למצב המקורי
+                button.textContent = originalText;
+                button.disabled = false;
+            })
+            .catch(error => {
+                console.error('PDF Download failed:', error);
+                alert('אירעה שגיאה בהורדת ה-PDF. נסה שוב מאוחר יותר.');
+                button.textContent = originalText;
+                button.disabled = false;
+            });
+    });
 });
 
 function escapeHTML(str) {
     if (!str) return '';
     return str.replace(/[&<>'"]/g, 
-        tag => ({
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            "'": '&#39;',
-            '"': '&quot;'
-        }[tag] || tag)
+        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
     );
 }
 </script>
