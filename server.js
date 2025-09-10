@@ -1,5 +1,5 @@
 // server.js
-console.log('--- Loading server.js v118 (PDF generation fix) ---');
+console.log('--- Loading server.js v119 (with debug logging) ---');
 
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
@@ -9,8 +9,6 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
 const multer = require('multer');
-
-// שינוי 1: יבוא חבילות חדשות
 const puppeteer = require('puppeteer-core');
 const chromium = require('@sparticuz/chromium');
 
@@ -36,6 +34,16 @@ const db = new sqlite3.Database(DB_PATH, (err) => {
 });
 
 /* ================= Middleware ================= */
+
+// ================================================================= //
+// --->   "מרגל" בקשות לאבחון באגים   <---
+// ================================================================= //
+app.use((req, res, next) => {
+  console.log(`[Request Logger] Method: ${req.method}, URL: ${req.originalUrl}`);
+  next();
+});
+// ================================================================= //
+
 app.use(bodyParser.json());
 app.use(session({
   secret: 'a-very-strong-and-long-secret-key-that-you-should-change',
@@ -322,7 +330,7 @@ app.get('/api/auth/view-as-pep', (req, res) => { if (req.session.user?.role === 
 app.get('/api/auth/view-as-nika', (req, res) => { if (req.session.user?.role === 'admin') req.session.viewAsOrg = 'NIKA'; res.redirect('/nika-builder'); });
 app.get('/api/auth/return-to-admin', (req, res) => { if (req.session.user) delete req.session.viewAsOrg; res.redirect('/admin'); });
 
-/* ================= Admin APIs (Simplified for brevity) ================= */
+/* ================= Admin APIs ================= */
 app.get('/api/admin/users', isApiAuthenticated, isAdmin, async (req, res) => { try { const rows = await all('SELECT id, email, fullname, role, organization, created_at FROM users ORDER BY created_at DESC'); res.json({ users: rows }); } catch (e) { res.status(500).json({ error: e.message }); }});
 app.post('/api/admin/users', isApiAuthenticated, isAdmin, async (req, res) => { try { const { email, password, fullname, role, organization } = req.body || {}; if (!email || !password) return res.status(400).json({ error: 'Email and password are required' }); const hash = await bcrypt.hash(String(password), 10); const r = await run( `INSERT INTO users (email, password_hash, fullname, role, organization) VALUES (?, ?, ?, ?, ?)`, [email, hash, fullname || '', role || 'member', organization || 'PEP'] ); res.json({ message: 'User created', id: r.lastID }); } catch (e) { res.status(400).json({ error: e.message }); }});
 app.put('/api/admin/users/:id', isApiAuthenticated, isAdmin, async (req, res) => { try { const { email, password, fullname, role, organization } = req.body || {}; if (password) { const hash = await bcrypt.hash(String(password), 10); await run(`UPDATE users SET email=?, password_hash=?, fullname=?, role=?, organization=? WHERE id=?`, [email, hash, fullname || '', role || 'member', organization || 'PEP', req.params.id]); } else { await run(`UPDATE users SET email=?, fullname=?, role=?, organization=? WHERE id=?`, [email, fullname || '', role || 'member', organization || 'PEP', req.params.id]); } res.json({ message: 'User updated' }); } catch (e) { res.status(400).json({ error: e.message }); }});
@@ -340,40 +348,79 @@ app.put('/api/lesson-plans/:id', isApiAuthenticated, async (req, res) => { try {
 app.delete('/api/lesson-plans/:id', isApiAuthenticated, async (req, res) => { try { const r = await run('DELETE FROM lesson_plans WHERE id = ? AND (user_id = ? OR ? = "admin")', [req.params.id, req.session.user.id, req.session.user.role]); res.json({ message: "Lesson plan deleted", changes: r.changes }); } catch (e) { res.status(400).json({ error: e.message }); }});
 
 /* ================= Subjects ================= */
-// ... (All Subjects APIs remain unchanged)
 app.get('/api/subjects', isApiAuthenticated, async (req, res) => { try { const rows = await all('SELECT * FROM subjects ORDER BY name'); res.json({ subjects: rows }); } catch (e) { res.status(500).json({ error: e.message }); }});
 app.post('/api/subjects', isApiAuthenticated, async (req, res) => { try { const { name } = req.body || {}; if (!name) return res.status(400).json({ error: 'Name is required' }); const r = await run('INSERT INTO subjects (name) VALUES (?)', [name]); res.json({ message: 'Subject created', data: { id: r.lastID, name } }); } catch (e) { res.status(400).json({ error: e.message }); }});
 app.put('/api/subjects/:id', isApiAuthenticated, async (req, res) => { try { const { name } = req.body || {}; if (!name) return res.status(400).json({ error: 'Name is required' }); const r = await run('UPDATE subjects SET name = ? WHERE id = ?', [name, req.params.id]); res.json({ message: 'Subject updated', changes: r.changes }); } catch (e) { res.status(400).json({ error: e.message }); }});
 app.delete('/api/subjects/:id', isApiAuthenticated, async (req, res) => { try { const r = await run('DELETE FROM subjects WHERE id = ?', [req.params.id]); res.json({ message: 'Subject deleted', changes: r.changes }); } catch (e) { res.status(400).json({ error: e.message }); }});
 
 /* ================= Exercises (PEP) ================= */
-// ... (All Exercises APIs remain unchanged)
 app.get('/api/exercises', isApiAuthenticated, async (req, res) => { try { const rows = await all('SELECT * FROM exercises ORDER BY created_at DESC'); res.json({ exercises: rows }); } catch (e) { res.status(500).json({ error: e.message }); }});
 app.post('/api/exercises', isApiAuthenticated, upload.single('image'), async (req, res) => { try { const { name, subject, category, description, equipment, age_group, type } = req.body || {}; const image_url = req.file ? `/uploads/${req.file.filename}` : (req.body && req.body.image_url) || ''; if (!name || !subject) return res.status(400).json({ error: 'Missing required fields' }); const sql = `INSERT INTO exercises (name, subject, category, description, equipment, age_group, image_url, type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`; const r = await run(sql, [name, subject, category || '', description || '', equipment || '', age_group || '', image_url, type || 'main']); res.json({ message: 'success', data: { id: r.lastID, ...req.body, image_url } }); } catch (e) { res.status(400).json({ error: e.message }); }});
 app.put('/api/exercises/:id', isApiAuthenticated, upload.single('image'), async (req, res) => { try { const { name, subject, category, description, equipment, age_group, type } = req.body || {}; const image_url = req.file ? `/uploads/${req.file.filename}` : (req.body && req.body.image_url) || ''; if (!name || !subject) return res.status(400).json({ error: 'Missing required fields' }); const sql = `UPDATE exercises SET name = ?, subject = ?, category = ?, description = ?, equipment = ?, age_group = ?, image_url = ?, type = ? WHERE id = ?`; const r = await run(sql, [name, subject, category || '', description || '', equipment || '', age_group || '', image_url, type || 'main', req.params.id]); res.json({ message: "Exercise updated", changes: r.changes }); } catch (e) { res.status(400).json({ error: e.message }); }});
 app.delete('/api/exercises/:id', isApiAuthenticated, async (req, res) => { try { const r = await run('DELETE FROM exercises WHERE id = ?', [req.params.id]); res.json({ message: "Exercise deleted", changes: r.changes }); } catch (e) { res.status(400).json({ error: e.message }); }});
 
 /* ================= NIKA games ================= */
-// ... (All NIKA Games APIs remain unchanged)
 app.get('/api/nika-games', isApiAuthenticated, async (req, res) => { try { const rows = await all('SELECT * FROM nika_games ORDER BY created_at DESC'); res.json({ games: rows }); } catch (e) { res.status(500).json({ error: e.message }); }});
 app.post('/api/nika-games', isApiAuthenticated, upload.single('image'), async (req, res) => { try { const { name, description, equipment, duration_minutes, type } = req.body || {}; const image_url = req.file ? `/uploads/${req.file.filename}` : (req.body && req.body.image_url) || ''; if (!name) return res.status(400).json({ error: "Name is required" }); const sql = `INSERT INTO nika_games (name, description, equipment, duration_minutes, image_url, type) VALUES (?, ?, ?, ?, ?, ?)`; const r = await run(sql, [name, description || '', equipment || '', duration_minutes || null, image_url, type || 'main']); res.json({ message: "NIKA game created", data: { id: r.lastID, ...req.body, image_url } }); } catch (e) { res.status(400).json({ error: e.message }); }});
 app.put('/api/nika-games/:id', isApiAuthenticated, upload.single('image'), async (req, res) => { try { const { name, description, equipment, duration_minutes, type } = req.body || {}; const image_url = req.file ? `/uploads/${req.file.filename}` : (req.body && req.body.image_url) || ''; if (!name) return res.status(400).json({ error: "Name is required" }); const sql = `UPDATE nika_games SET name = ?, description = ?, equipment = ?, duration_minutes = ?, image_url = ?, type = ? WHERE id = ?`; const r = await run(sql, [name, description || '', equipment || '', duration_minutes || null, image_url, type || 'main', req.params.id]); res.json({ message: "NIKA game updated", changes: r.changes }); } catch (e) { res.status(400).json({ error: e.message }); }});
 app.delete('/api/nika-games/:id', isApiAuthenticated, async (req, res) => { try { const r = await run('DELETE FROM nika_games WHERE id = ?', [req.params.id]); res.json({ message: "NIKA game deleted", changes: r.changes }); } catch (e) { res.status(400).json({ error: e.message }); }});
 
 
-/* ================= Pages ================= */
+/* ================= PDF ================= */
+app.get('/api/lesson-plans/:id/pdf', isApiAuthenticated, async (req, res) => {
+  let browser = null;
+  try {
+    const planData = await getFullLessonPlan(req.params.id, req.session.user, db);
+    const htmlContent = await generateHtmlForPdf(planData, req.session.user);
 
-// ================================================================= //
-// --->   קוד חדש לבדיקת בריאות (Health Check)   <---
-// ================================================================= //
-app.get('/health', (req, res) => {
-  // נקודת קצה זו מחזירה תשובה פשוטה ומהירה
-  // כדי ששירות האחסון יידע שהשרת פועל תקין
-  res.status(200).send('OK');
+    browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
+    });
+
+    const page = await browser.newPage();
+    await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+    await page.emulateMediaType('screen');
+
+    const headerTemplate = `<div style="font-family: Heebo, Arial, sans-serif; font-size: 8px; width:100%; color:#718096;"></div>`;
+    const footerTemplate = `
+      <div style="font-family: Heebo, Arial, sans-serif; font-size: 9px; width:100%; color:#718096; text-align:center;">
+        נוצר באמצעות PE.P | כל הזכויות שמורות | עמוד <span class="pageNumber"></span> מתוך <span class="totalPages"></span>
+      </div>`;
+
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      displayHeaderFooter: true,
+      headerTemplate,
+      footerTemplate,
+      margin: { top: '12mm', bottom: '16mm', left: '12mm', right: '12mm' }
+    });
+    
+    const safe = sanitizeFilename(planData.name || 'lesson');
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition',
+      `attachment; filename="${safe.replace(/[^\x20-\x7E]/g, '_')}.pdf"; filename*=UTF-8''${encodeURIComponent(safe)}.pdf`);
+    res.send(pdfBuffer);
+
+  } catch (error) {
+    console.error("PDF Generation Error:", error);
+    if (String(error?.message || '').includes("Plan not found")) {
+      return res.status(404).send("Lesson plan not found or you do not have permission to view it.");
+    }
+    res.status(500).send("Error generating PDF.");
+  } finally {
+    if (browser !== null) {
+      await browser.close();
+    }
+  }
 });
-// ================================================================= //
 
 
+/* ================= Pages ================= */
+app.get('/health', (req, res) => { res.status(200).send('OK'); });
 app.get('/', (req,res)=>res.redirect('/auth'));
 app.get('/auth', (req,res)=>{
   if (req.session.user){
@@ -394,6 +441,17 @@ app.get('/lesson-builder', authorizePageAccess, (req,res)=>res.sendFile(path.joi
 app.get('/nika-builder', authorizePageAccess, (req,res)=>res.sendFile(path.join(__dirname,'public','nika-builder.html')));
 app.get('/my-lessons-pep', authorizePageAccess, (req,res)=>res.sendFile(path.join(__dirname,'public','my-lessons-pep.html')));
 app.get('/my-lessons-nika', authorizePageAccess, (req,res)=>res.sendFile(path.join(__dirname,'public','my-lessons-nika.html')));
+
+// ================================================================= //
+// --->   מטפל שגיאות 404 לאבחון באגים   <---
+// ================================================================= //
+// This should be the LAST app.use() call
+app.use(function(req, res, next) {
+  console.error(`[404 Handler] Route not found: ${req.method} ${req.originalUrl}`);
+  res.status(404).send("Sorry, can't find that!");
+});
+// ================================================================= //
+
 
 /* ================= Boot ================= */
 ensureSchema().then(() => {
