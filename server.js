@@ -1,5 +1,5 @@
 // server.js
-console.log('--- Loading server.js v119 (with debug logging) ---');
+console.log('--- Loading server.js v120 (PDF auth fix) ---');
 
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
@@ -34,22 +34,20 @@ const db = new sqlite3.Database(DB_PATH, (err) => {
 });
 
 /* ================= Middleware ================= */
-
-// ================================================================= //
-// --->   "מרגל" בקשות לאבחון באגים   <---
-// ================================================================= //
 app.use((req, res, next) => {
   console.log(`[Request Logger] Method: ${req.method}, URL: ${req.originalUrl}`);
   next();
 });
-// ================================================================= //
 
 app.use(bodyParser.json());
 app.use(session({
   secret: 'a-very-strong-and-long-secret-key-that-you-should-change',
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false, httpOnly: true, sameSite: 'lax' }
+  // ================================================================= //
+  // --->   התיקון כאן: הסרת המדיניות המחמירה של העוגייה   <---
+  // ================================================================= //
+  cookie: { secure: false, httpOnly: true } // הוסרה ההגדרה sameSite: 'lax'
 }));
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -442,16 +440,10 @@ app.get('/nika-builder', authorizePageAccess, (req,res)=>res.sendFile(path.join(
 app.get('/my-lessons-pep', authorizePageAccess, (req,res)=>res.sendFile(path.join(__dirname,'public','my-lessons-pep.html')));
 app.get('/my-lessons-nika', authorizePageAccess, (req,res)=>res.sendFile(path.join(__dirname,'public','my-lessons-nika.html')));
 
-// ================================================================= //
-// --->   מטפל שגיאות 404 לאבחון באגים   <---
-// ================================================================= //
-// This should be the LAST app.use() call
 app.use(function(req, res, next) {
   console.error(`[404 Handler] Route not found: ${req.method} ${req.originalUrl}`);
   res.status(404).send("Sorry, can't find that!");
 });
-// ================================================================= //
-
 
 /* ================= Boot ================= */
 ensureSchema().then(() => {
