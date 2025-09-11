@@ -1,5 +1,5 @@
 // server.js
-console.log('--- Loading server.js v122 (PDF Debug Mode) ---');
+console.log('--- Loading server.js v123 (PDF Enabled) ---');
 
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
@@ -11,9 +11,9 @@ const bcrypt = require('bcrypt');
 const multer = require('multer');
 
 // ================================================================= //
-// --->   נטרול זמני של חבילות ה-PDF לצורך אבחון   <---
-// const puppeteer = require('puppeteer-core');
-// const chromium = require('@sparticuz/chromium');
+// --->   הפעלת חבילות ה-PDF לצורך יצוא   <---
+const puppeteer = require('puppeteer-core');
+const chromium = require('@sparticuz/chromium');
 // ================================================================= //
 
 const app = express();
@@ -369,27 +369,30 @@ app.put('/api/nika-games/:id', isApiAuthenticated, upload.single('image'), async
 app.delete('/api/nika-games/:id', isApiAuthenticated, async (req, res) => { try { const r = await run('DELETE FROM nika_games WHERE id = ?', [req.params.id]); res.json({ message: "NIKA game deleted", changes: r.changes }); } catch (e) { res.status(400).json({ error: e.message }); }});
 
 
-/* ================= PDF (Temporarily Disabled for Debugging) ================= */
-/*
+/* ================= PDF (Restored) ================= */
 app.get('/api/lesson-plans/:id/pdf', isApiAuthenticated, async (req, res) => {
   let browser = null;
   try {
     const planData = await getFullLessonPlan(req.params.id, req.session.user, db);
     const htmlContent = await generateHtmlForPdf(planData, req.session.user);
+
     browser = await puppeteer.launch({
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
       executablePath: await chromium.executablePath(),
       headless: chromium.headless,
     });
+
     const page = await browser.newPage();
     await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
     await page.emulateMediaType('screen');
+
     const headerTemplate = `<div style="font-family: Heebo, Arial, sans-serif; font-size: 8px; width:100%; color:#718096;"></div>`;
     const footerTemplate = `
       <div style="font-family: Heebo, Arial, sans-serif; font-size: 9px; width:100%; color:#718096; text-align:center;">
         נוצר באמצעות PE.P | כל הזכויות שמורות | עמוד <span class="pageNumber"></span> מתוך <span class="totalPages"></span>
       </div>`;
+
     const pdfBuffer = await page.pdf({
       format: 'A4',
       printBackground: true,
@@ -416,7 +419,6 @@ app.get('/api/lesson-plans/:id/pdf', isApiAuthenticated, async (req, res) => {
     }
   }
 });
-*/
 
 
 /* ================= Pages ================= */
